@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sir-ad/NXL/main/assets/banner.svg" alt="NXL" width="100%">
+  <img src="https://raw.githubusercontent.com/sir-ad/NXL/main/assets/banner.png" alt="NXL" width="100%">
 </p>
 
 <p align="center">
