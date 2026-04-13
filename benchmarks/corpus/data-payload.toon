@@ -1,0 +1,16 @@
+agents[8]{id,status,tasks,memory_usage,uptime_sec,last_heartbeat}:
+agt-001,active,12,450,3600,2024-04-13T09:30:00Z
+agt-002,idle,0,120,7200,2024-04-13T09:25:00Z
+agt-003,busy,8,890,1800,2024-04-13T09:29:00Z
+agt-004,error,3,220,900,2024-04-13T09:10:00Z
+agt-005,active,15,670,5400,2024-04-13T09:28:00Z
+agt-006,active,7,340,2400,2024-04-13T09:27:00Z
+agt-007,idle,0,90,10800,2024-04-13T09:20:00Z
+agt-008,busy,22,1200,4500,2024-04-13T09:29:30Z
+
+tasks[5]{id,type,priority,created,assigned_to,status}:
+tsk-101,code_gen,9,2024-04-13T09:30:00Z,agt-001,running
+tsk-102,memory_search,5,2024-04-13T09:35:00Z,agt-005,queued
+tsk-103,code_review,7,2024-04-13T09:32:00Z,agt-003,running
+tsk-104,data_analysis,3,2024-04-13T09:28:00Z,agt-006,completed
+tsk-105,code_gen,8,2024-04-13T09:33:00Z,agt-008,running

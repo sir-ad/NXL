@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/nxl-core" },
+    { "path": "packages/nxl-toon" },
+    { "path": "packages/nxl-compiler" },
+    { "path": "packages/nxl-compress" },
+    { "path": "packages/nxl-tokenizer" },
+    { "path": "packages/nxl-cli" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "agents": [
+    {"id": "agt-001", "status": "active", "tasks": 12, "memory_usage": 450, "uptime_sec": 3600, "last_heartbeat": "2024-04-13T09:30:00Z"},
+    {"id": "agt-002", "status": "idle", "tasks": 0, "memory_usage": 120, "uptime_sec": 7200, "last_heartbeat": "2024-04-13T09:25:00Z"},
+    {"id": "agt-003", "status": "busy", "tasks": 8, "memory_usage": 890, "uptime_sec": 1800, "last_heartbeat": "2024-04-13T09:29:00Z"},
+    {"id": "agt-004", "status": "error", "tasks": 3, "memory_usage": 220, "uptime_sec": 900, "last_heartbeat": "2024-04-13T09:10:00Z"},
+    {"id": "agt-005", "status": "active", "tasks": 15, "memory_usage": 670, "uptime_sec": 5400, "last_heartbeat": "2024-04-13T09:28:00Z"},
+    {"id": "agt-006", "status": "active", "tasks": 7, "memory_usage": 340, "uptime_sec": 2400, "last_heartbeat": "2024-04-13T09:27:00Z"},
+    {"id": "agt-007", "status": "idle", "tasks": 0, "memory_usage": 90, "uptime_sec": 10800, "last_heartbeat": "2024-04-13T09:20:00Z"},
+    {"id": "agt-008", "status": "busy", "tasks": 22, "memory_usage": 1200, "uptime_sec": 4500, "last_heartbeat": "2024-04-13T09:29:30Z"}
+  ],
+  "tasks": [
+    {"id": "tsk-101", "type": "code_gen", "priority": 9, "created": "2024-04-13T09:30:00Z", "assigned_to": "agt-001", "status": "running"},
+    {"id": "tsk-102", "type": "memory_search", "priority": 5, "created": "2024-04-13T09:35:00Z", "assigned_to": "agt-005", "status": "queued"},
+    {"id": "tsk-103", "type": "code_review", "priority": 7, "created": "2024-04-13T09:32:00Z", "assigned_to": "agt-003", "status": "running"},
+    {"id": "tsk-104", "type": "data_analysis", "priority": 3, "created": "2024-04-13T09:28:00Z", "assigned_to": "agt-006", "status": "completed"},
+    {"id": "tsk-105", "type": "code_gen", "priority": 8, "created": "2024-04-13T09:33:00Z", "assigned_to": "agt-008", "status": "running"}
+  ]
+}

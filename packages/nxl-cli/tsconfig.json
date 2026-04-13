@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "paths": {
+      "@nxl/core": ["../nxl-core/src/index.ts"],
+      "@nxl/compiler": ["../nxl-compiler/src/index.ts"],
+      "@nxl/compress": ["../nxl-compress/src/index.ts"],
+      "@nxl/toon": ["../nxl-toon/src/index.ts"],
+      "@nxl/tokenizer": ["../nxl-tokenizer/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

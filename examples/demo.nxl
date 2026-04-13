@@ -1,0 +1,40 @@
+// NXL Demo: Token-Efficient Agent Orchestration
+// This file demonstrates all NXL language features
+
+// ===== Pipeline: Filter with MetaGlyph symbols =====
+tasks → select ∈(ready) ∩ ¬(blocked) ∩ priority>5
+
+// ===== Conditionals: Route based on priority =====
+priority>5 ⇒ exec:immediate | log:high_priority
+priority<=5 ⇒ exec:queued | log:normal
+
+// ===== Composition: Chain operations =====
+retrieve ∘ validate ∘ transform ∘ store
+
+// ===== Shorthand: Memory and agent operations =====
+mem?[query, recent=10, threshold=0.7]
+mem!["agent-state", current_state, ttl=3600]
+hire![researcher, budget=500, priority=high]
+exec@[mode=parallel, timeout=30s, retries=3]
+
+// ===== TOON Data: Agent registry =====
+agents[5]{id,status,tasks,memory_usage,uptime}:
+agt-001,active,12,450,3600
+agt-002,idle,0,120,7200
+agt-003,busy,8,890,1800
+agt-004,error,3,220,900
+agt-005,active,15,670,5400
+
+// ===== Type Declaration: Folded agent definition =====
+Agent{id,role,capabilities}{
+  init(config:Config): ...
+  execute(task:Task): ...
+  hire_subagent(role:str, budget:int): ...
+  query_memory(semantic:str, k:int): ...
+  report_metrics(): ...
+}
+
+// ===== Assignments =====
+max_retries = 3
+timeout = 30
+name = "nexus-orchestrator"

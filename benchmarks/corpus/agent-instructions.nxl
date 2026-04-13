@@ -1,0 +1,30 @@
+// Agent definition with AST folding
+Agent{id,role,capabilities}{
+  execute(task:Dict): ...
+  hire_subagent(role:str, budget:int): ...
+  query_memory(semantic:str, k:int): ...
+  report_metrics(): ...
+}
+
+// Filter active tasks
+tasks → select ∈(ready) ∩ ¬(blocked) ∩ priority>5
+
+// Compose processing pipeline
+retrieve ∘ validate ∘ transform ∘ store
+
+// Memory operations
+mem?[user_query, limit=10, threshold=0.7]
+mem!["agent-state", current_state, ttl=3600]
+
+// Agent management
+hire![researcher, budget=500, priority=high]
+exec@[mode=parallel, timeout=30s, retries=3]
+watch@[metric=latency, interval=5s, threshold=100]
+
+// Agent registry
+agents[5]{id,status,tasks,memory_usage,uptime_sec}:
+agt-001,active,12,450,3600
+agt-002,idle,0,120,7200
+agt-003,busy,8,890,1800
+agt-004,error,3,220,900
+agt-005,active,15,670,5400

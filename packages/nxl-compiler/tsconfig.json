@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "paths": {
+      "@nxl/core": ["../nxl-core/src/index.ts"],
+      "@nxl/toon": ["../nxl-toon/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@nxl/compress",
+  "version": "0.1.0",
+  "description": "NXL compressor - convert Python/JS to NXL",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@nxl/core": "workspace:*",
+    "acorn": "^8.14.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test || true",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@nxl/cli",
+  "version": "0.1.0",
+  "description": "NXL command-line interface",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "nxl": "dist/index.js"
+  },
+  "dependencies": {
+    "@nxl/core": "workspace:*",
+    "@nxl/compiler": "workspace:*",
+    "@nxl/compress": "workspace:*",
+    "@nxl/toon": "workspace:*",
+    "@nxl/tokenizer": "workspace:*",
+    "commander": "^13.0.0",
+    "chalk": "^5.4.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test || true",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@nxl/toon",
+  "version": "0.1.0",
+  "description": "TOON - Token-Oriented Object Notation serializer",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "files": [
+    "dist"
+  ]
+}

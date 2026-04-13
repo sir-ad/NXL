@@ -1,0 +1,19 @@
+{
+  "name": "nxl",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NXL - Token-efficient programming language for LLMs",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "clean": "pnpm -r clean"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}
