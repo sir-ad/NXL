@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="NXL" width="100%">
+  <img src="https://raw.githubusercontent.com/sir-ad/NXL/main/assets/banner.svg" alt="NXL" width="100%">
 </p>
 
 <p align="center">
@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/token%20reduction-70%25-black?style=flat-square" alt="Token Reduction">
   <img src="https://img.shields.io/badge/semantic%20equivalence-95%25+-blue?style=flat-square" alt="Semantic Equivalence">
   <a href="https://nexus-prime.cfd/nxl"><img src="https://img.shields.io/badge/docs-nexus--prime.cfd%2Fnxl-0066cc?style=flat-square" alt="Docs"></a>
+  <img src="https://nexus-prime.cfd/api/nxl/badge" alt="Downloads">
 </p>
 
 ---
