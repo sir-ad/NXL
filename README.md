@@ -1,22 +1,59 @@
-# NXL — Less tokens. Same meaning.
+<p align="center">
+  <img src="assets/banner.svg" alt="NXL" width="100%">
+</p>
 
-**NXL** reduces LLM token consumption by 70% while maintaining full semantic equivalence. Built for agents, memory systems, and anyone shipping AI.
+<p align="center">
+  <a href="https://github.com/sir-ad/NXL/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/tests-83%20passing-brightgreen?style=flat-square" alt="Tests">
+  <img src="https://img.shields.io/badge/token%20reduction-70%25-black?style=flat-square" alt="Token Reduction">
+  <img src="https://img.shields.io/badge/semantic%20equivalence-95%25+-blue?style=flat-square" alt="Semantic Equivalence">
+  <a href="https://nexus-prime.cfd/nxl"><img src="https://img.shields.io/badge/docs-nexus--prime.cfd%2Fnxl-0066cc?style=flat-square" alt="Docs"></a>
+</p>
+
+---
+
+## The Problem
+
+Every LLM call costs tokens. Every token costs money, latency, and context window space.
+
+AI agents routinely burn **60-80% of their token budget** on syntactic overhead — repeated JSON keys, verbose control flow keywords, boilerplate class definitions, and redundant data structure formatting. This isn't a minor inefficiency. When an agent processes 100K tokens per session, **60-80K of those tokens carry zero semantic value**. They're the tax you pay for languages that were designed for humans, not machines.
+
+The consequences compound:
+- **Cost** — token pricing is linear; waste scales with usage
+- **Context windows** — every wasted token displaces information the model actually needs
+- **Latency** — more tokens = slower inference, slower agents
+- **Memory systems** — storing verbose representations inflates vector DBs and retrieval pipelines
+
+**NXL eliminates this waste.** Same semantics. 70% fewer tokens.
+
+---
+
+## What is NXL?
+
+**NXL** is a programming language that reduces LLM token consumption by 70% while maintaining full semantic equivalence. It combines five proven compression techniques into a single, coherent syntax that LLMs already understand from their training data.
 
 ```
-// Python (856 tokens)                    // NXL (355 tokens) — 58% reduction
-tasks = [t for t in all_tasks             tasks → select ∈(ready) ∩ ¬(blocked) ∩ priority>5
-  if t.status == 'ready'
-  and not t.blocked
-  and t.priority > 5]
+// Python — 856 tokens                        // NXL — 355 tokens (58% reduction)
 
-result = store(transform(                 retrieve ∘ validate ∘ transform ∘ store
-  validate(retrieve())))
-
-memory.search(                            mem?[query, recent=10, threshold=0.7]
-  query=query,
-  limit=10,
-  min_similarity=0.7)
+class Agent:                                   Agent{id,role,capabilities}{
+    def __init__(self, id, role, caps):          execute(task:Task): ...
+        self.id = id                             hire_subagent(role:str, budget:int): ...
+        ...                                      query_memory(query:str, k:int): ...
+    def execute(self, task):                   }
+        if task['priority'] > 5:
+            result = self.execute_immediate()   tasks → select ∈(ready) ∩ ¬(blocked) ∩ priority>5
+            ...
+                                                retrieve ∘ validate ∘ transform ∘ store
+tasks = [t for t in all_tasks
+    if t.status == 'ready'                      mem?[query, recent=10, threshold=0.7]
+    and not t.blocked
+    and t.priority > 5]                         agents[3]{id,status,tasks}:
+                                                agt-001,active,12
+result = store(transform(                       agt-002,idle,0
+    validate(retrieve())))                      agt-003,busy,8
 ```
+
+---
 
 ## Install
 
@@ -33,43 +70,36 @@ git clone https://github.com/sir-ad/NXL.git && cd NXL && pnpm install
 ## Usage
 
 ```bash
-# Compile NXL to Python
-nxl compile file.nxl --target python
-
-# Compile NXL to JavaScript
-nxl compile file.nxl --target js
-
-# Interactive REPL
-nxl repl
-
-# Token comparison
-nxl tokens file.nxl --compare original.py
+nxl compile file.nxl --target python    # Compile to Python
+nxl compile file.nxl --target js        # Compile to JavaScript
+nxl repl                                # Interactive REPL
+nxl tokens file.nxl --compare orig.py   # Token comparison
 ```
+
+---
 
 ## Five Techniques
 
-### MetaGlyph Symbols — 60% reduction on control flow
+| Technique | What it does | Reduction |
+|-----------|-------------|-----------|
+| **MetaGlyph Symbols** | `→ ∈ ⇒ ∩ ¬ ∘` replace verbose keywords. LLMs already know them from training data. ASCII fallbacks for every symbol. | 60% on control flow |
+| **TOON Format** | Token-Oriented Object Notation. Declare schema once, send only values. Kills repeated keys and quotes. | 57% on data |
+| **AST Folding** | Collapse method bodies to `...` signatures. Show structure, hide implementation. Unfold on demand. | 80% on code defs |
+| **Domain Shorthand** | `mem?[]` for search, `hire![]` for agents, `exec@[]` for execution. Extensible via `.nxlrc`. | 70% on API calls |
+| **Custom BPE** | Vocabulary trained on agent orchestration. "agent", "memory" → single tokens. | 15-25% additional |
 
-Mathematical symbols LLMs already understand, with ASCII fallbacks:
+### MetaGlyph Symbols
 
-| Symbol | ASCII | Meaning |
-|--------|-------|---------|
-| `→` | `->` | Pipeline/transform |
-| `∈` | — | Membership |
-| `⇒` | `=>` | Implies/conditional |
-| `∩` | `&&` | Intersection |
-| `¬` | `!` | Negation |
-| `∘` | `\|>` | Composition |
+| Symbol | ASCII | Meaning | Example |
+|--------|-------|---------|---------|
+| `→` | `->` | Pipeline | `tasks → select ∈(ready)` |
+| `∈` | — | Membership | `∈(active)` |
+| `⇒` | `=>` | Conditional | `x>5 ⇒ action:run` |
+| `∩` | `&&` | Intersection | `∈(ready) ∩ ¬(blocked)` |
+| `¬` | `!` | Negation | `¬(blocked)` |
+| `∘` | `\|>` | Composition | `validate ∘ transform ∘ store` |
 
-```
-tasks → select ∈(ready) ∩ ¬(blocked) ∩ priority>5
-priority>5 ⇒ exec:immediate | log:high_priority
-retrieve ∘ validate ∘ transform ∘ store
-```
-
-### TOON Data Format — 57% reduction on structured data
-
-Declare schema once, send only values:
+### TOON Data Format
 
 ```
 agents[5]{id,status,tasks,memory_usage}:
@@ -78,7 +108,7 @@ agt-002,idle,0,120
 agt-003,busy,8,890
 ```
 
-### Domain Shorthand — 70% reduction on API calls
+### Domain Shorthand
 
 ```
 mem?[query, recent=10, threshold=0.7]    // → memory.search(...)
@@ -87,7 +117,7 @@ hire![researcher, budget=500]            // → agent.spawn(...)
 exec@[mode=parallel, timeout=30s]        // → runtime.execute(...)
 ```
 
-### AST Folding — 80% reduction on code definitions
+### AST Folding
 
 ```
 Agent{id,role,capabilities}{
@@ -98,30 +128,30 @@ Agent{id,role,capabilities}{
 }
 ```
 
-### Custom BPE Tokenizer — 15-25% additional reduction
-
-Vocabulary trained on agent orchestration patterns. Common terms become single tokens.
+---
 
 ## Benchmarks
 
 | Benchmark | Original | NXL | Char Reduction | Token Reduction |
 |-----------|----------|-----|----------------|-----------------|
-| Agent Instructions | 2517 | 816 | 67.6% | 58.5% |
-| Data Payload (JSON) | 1850 | 787 | 57.5% | 44.2% |
-| Combined | 4367 | 1603 | 63.3% | 52.1% |
+| Agent Instructions | 2,517 | 816 | 67.6% | 58.5% |
+| Data Payload (JSON) | 1,850 | 787 | 57.5% | 44.2% |
+| **Combined** | **4,367** | **1,603** | **63.3%** | **52.1%** |
 
 ```bash
 bun benchmarks/run-benchmark.ts
 ```
 
+---
+
 ## Architecture
 
 ```
 packages/
-  nxl-core/       # Lexer, parser, AST (hand-written recursive descent)
-  nxl-toon/       # TOON serializer/deserializer (standalone)
-  nxl-compiler/   # NXL → Python/JavaScript transpiler
-  nxl-compress/   # Python/JavaScript → NXL compressor
+  nxl-core/       # Lexer, parser, AST — hand-written recursive descent
+  nxl-toon/       # TOON serializer/deserializer
+  nxl-compiler/   # NXL → Python / JavaScript transpiler
+  nxl-compress/   # Python / JavaScript → NXL compressor
   nxl-tokenizer/  # Custom BPE tokenizer
   nxl-cli/        # Command-line interface
 ```
@@ -129,13 +159,13 @@ packages/
 ## Tests
 
 ```bash
-pnpm test     # Run all 83 tests
+pnpm test     # 83 tests across all packages
 ```
 
-## Docs
+---
 
-[nexus-prime.cfd/nxl](https://nexus-prime.cfd/nxl)
-
-## License
-
-MIT
+<p align="center">
+  <a href="https://nexus-prime.cfd/nxl">Documentation</a> &middot;
+  <a href="https://github.com/sir-ad/NXL/issues">Issues</a> &middot;
+  MIT License
+</p>

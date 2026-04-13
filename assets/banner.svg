@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" fill="none">
+  <rect width="1200" height="300" fill="#fafafa"/>
+
+  <!-- Abstract geometric composition — inspired by reduction -->
+  <rect x="60" y="40" width="220" height="220" rx="24" fill="#1d1d1f" opacity="0.04"/>
+  <rect x="80" y="60" width="180" height="180" rx="18" fill="#1d1d1f" opacity="0.06"/>
+
+  <!-- NXL wordmark -->
+  <text x="600" y="155" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="72" font-weight="600" letter-spacing="-3" fill="#1d1d1f">NXL</text>
+  <text x="600" y="195" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="16" font-weight="300" letter-spacing="4" fill="#86868b">LESS TOKENS. SAME MEANING.</text>
+
+  <!-- Symbolic glyphs floating -->
+  <text x="380" y="100" font-family="'JetBrains Mono', monospace" font-size="28" fill="#0066cc" opacity="0.5">&rarr;</text>
+  <text x="820" y="100" font-family="'JetBrains Mono', monospace" font-size="28" fill="#0066cc" opacity="0.5">&isin;</text>
+  <text x="350" y="220" font-family="'JetBrains Mono', monospace" font-size="28" fill="#0066cc" opacity="0.35">&cap;</text>
+  <text x="850" y="220" font-family="'JetBrains Mono', monospace" font-size="28" fill="#0066cc" opacity="0.35">&not;</text>
+  <text x="430" y="260" font-family="'JetBrains Mono', monospace" font-size="22" fill="#0066cc" opacity="0.25">&#8728;</text>
+  <text x="770" y="70" font-family="'JetBrains Mono', monospace" font-size="22" fill="#0066cc" opacity="0.25">&rArr;</text>
+
+  <!-- Minimal geometric accents -->
+  <circle cx="960" cy="80" r="40" fill="#0066cc" opacity="0.06"/>
+  <circle cx="980" cy="100" r="60" fill="#0066cc" opacity="0.04"/>
+  <rect x="1020" y="160" width="120" height="2" rx="1" fill="#0066cc" opacity="0.15"/>
+  <rect x="1050" y="180" width="60" height="2" rx="1" fill="#0066cc" opacity="0.1"/>
+
+  <line x1="140" y1="280" x2="300" y2="280" stroke="#d2d2d7" stroke-width="0.5"/>
+  <line x1="900" y1="20" x2="1100" y2="20" stroke="#d2d2d7" stroke-width="0.5"/>
+
+  <!-- Reduction visualization: thick to thin -->
+  <rect x="100" y="140" width="8" height="24" rx="2" fill="#1d1d1f" opacity="0.15"/>
+  <rect x="114" y="144" width="6" height="16" rx="2" fill="#1d1d1f" opacity="0.12"/>
+  <rect x="126" y="147" width="4" height="10" rx="2" fill="#0066cc" opacity="0.3"/>
+
+  <rect x="1072" y="120" width="8" height="24" rx="2" fill="#1d1d1f" opacity="0.15"/>
+  <rect x="1086" y="124" width="6" height="16" rx="2" fill="#1d1d1f" opacity="0.12"/>
+  <rect x="1098" y="127" width="4" height="10" rx="2" fill="#0066cc" opacity="0.3"/>
+</svg>
