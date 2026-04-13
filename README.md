@@ -1,6 +1,6 @@
-# NXL - Token-Efficient Programming Language
+# NXL — Less tokens. Same meaning.
 
-**NXL** reduces LLM token consumption by 60-70% while maintaining full semantic equivalence. Built for anyone creating agents, memory systems, and LLM applications.
+**NXL** reduces LLM token consumption by 70% while maintaining full semantic equivalence. Built for agents, memory systems, and anyone shipping AI.
 
 ```
 // Python (856 tokens)                    // NXL (355 tokens) — 58% reduction
@@ -21,36 +21,41 @@ memory.search(                            mem?[query, recent=10, threshold=0.7]
 ## Install
 
 ```bash
-git clone https://github.com/user/nxl && cd nxl
-pnpm install
+curl -fsSL https://nexus-prime.cfd/nxl/install.sh | sh
+```
+
+Or clone manually:
+
+```bash
+git clone https://github.com/sir-ad/NXL.git && cd NXL && pnpm install
 ```
 
 ## Usage
 
 ```bash
 # Compile NXL to Python
-bun packages/nxl-cli/src/index.ts compile file.nxl --target python
+nxl compile file.nxl --target python
 
-# Compile NXL to JavaScript  
-bun packages/nxl-cli/src/index.ts compile file.nxl --target js
+# Compile NXL to JavaScript
+nxl compile file.nxl --target js
 
 # Interactive REPL
-bun packages/nxl-cli/src/index.ts repl
+nxl repl
 
 # Token comparison
-bun packages/nxl-cli/src/index.ts tokens file.nxl --compare original.py
+nxl tokens file.nxl --compare original.py
 ```
 
-## Language Features
+## Five Techniques
 
-### MetaGlyph Symbols (60% reduction on control flow)
+### MetaGlyph Symbols — 60% reduction on control flow
 
 Mathematical symbols LLMs already understand, with ASCII fallbacks:
 
 | Symbol | ASCII | Meaning |
 |--------|-------|---------|
 | `→` | `->` | Pipeline/transform |
-| `∈` | - | Membership |
+| `∈` | — | Membership |
 | `⇒` | `=>` | Implies/conditional |
 | `∩` | `&&` | Intersection |
 | `¬` | `!` | Negation |
@@ -62,7 +67,7 @@ priority>5 ⇒ exec:immediate | log:high_priority
 retrieve ∘ validate ∘ transform ∘ store
 ```
 
-### TOON Data Format (57% reduction on structured data)
+### TOON Data Format — 57% reduction on structured data
 
 Declare schema once, send only values:
 
@@ -73,27 +78,16 @@ agt-002,idle,0,120
 agt-003,busy,8,890
 ```
 
-vs JSON equivalent (127 chars → 61 chars):
-
-```json
-{"agents":[{"id":"agt-001","status":"active","tasks":12,"memory_usage":450},
-{"id":"agt-002","status":"idle","tasks":0,"memory_usage":120},
-{"id":"agt-003","status":"busy","tasks":8,"memory_usage":890}]}
-```
-
-### Domain Shorthand (70% reduction on API calls)
+### Domain Shorthand — 70% reduction on API calls
 
 ```
 mem?[query, recent=10, threshold=0.7]    // → memory.search(...)
 mem!["key", value, ttl=3600]             // → memory.insert(...)
 hire![researcher, budget=500]            // → agent.spawn(...)
 exec@[mode=parallel, timeout=30s]        // → runtime.execute(...)
-watch@[metric=latency, interval=5s]      // → monitor.observe(...)
 ```
 
-### AST Folding (80% reduction on code definitions)
-
-Collapse method bodies to signatures:
+### AST Folding — 80% reduction on code definitions
 
 ```
 Agent{id,role,capabilities}{
@@ -101,21 +95,24 @@ Agent{id,role,capabilities}{
   execute(task:Task): ...
   hire_subagent(role:str, budget:int): ...
   query_memory(semantic:str, k:int): ...
-  report_metrics(): ...
 }
 ```
 
+### Custom BPE Tokenizer — 15-25% additional reduction
+
+Vocabulary trained on agent orchestration patterns. Common terms become single tokens.
+
 ## Benchmarks
 
-```
-| Benchmark            | Original | NXL  | Char Reduction | Token Reduction |
-|----------------------|----------|------|----------------|-----------------|
-| Agent Instructions   |    2517  |  816 |     67.6%      |     58.5%       |
-| Data Payload (JSON)  |    1850  |  787 |     57.5%      |     44.2%       |
-| Combined             |    4367  | 1603 |     63.3%      |     52.1%       |
-```
+| Benchmark | Original | NXL | Char Reduction | Token Reduction |
+|-----------|----------|-----|----------------|-----------------|
+| Agent Instructions | 2517 | 816 | 67.6% | 58.5% |
+| Data Payload (JSON) | 1850 | 787 | 57.5% | 44.2% |
+| Combined | 4367 | 1603 | 63.3% | 52.1% |
 
-Run benchmarks: `bun benchmarks/run-benchmark.ts`
+```bash
+bun benchmarks/run-benchmark.ts
+```
 
 ## Architecture
 
@@ -134,6 +131,10 @@ packages/
 ```bash
 pnpm test     # Run all 83 tests
 ```
+
+## Docs
+
+[nexus-prime.cfd/nxl](https://nexus-prime.cfd/nxl)
 
 ## License
 

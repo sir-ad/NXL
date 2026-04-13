@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NXL — Less tokens. Same meaning.</title>
+  <meta name="description" content="NXL reduces LLM token consumption by 70%. A programming language designed for the age of AI.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a href="#" class="logo">NXL</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#compare">Compare</a>
+      <a href="#docs">Docs</a>
+      <a href="https://github.com/sir-ad/NXL" target="_blank">GitHub</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-label">Open Source</p>
+    <h1>Less tokens.<br>Same meaning.</h1>
+    <p class="hero-sub">NXL is a programming language that reduces LLM token consumption by 70%.<br>Built for agents, memory systems, and anyone shipping AI.</p>
+    <div class="hero-install">
+      <code>curl -fsSL https://nexus-prime.cfd/nxl/install.sh | sh</code>
+      <button onclick="copy(this)" aria-label="Copy">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Numbers -->
+  <section class="numbers">
+    <div class="number-card">
+      <span class="number-value">70%</span>
+      <span class="number-label">Token reduction</span>
+    </div>
+    <div class="number-card">
+      <span class="number-value">95%+</span>
+      <span class="number-label">Semantic equivalence</span>
+    </div>
+    <div class="number-card">
+      <span class="number-value">5</span>
+      <span class="number-label">Techniques combined</span>
+    </div>
+    <div class="number-card">
+      <span class="number-value">&lt;10ms</span>
+      <span class="number-label">Compilation time</span>
+    </div>
+  </section>
+
+  <!-- Compare -->
+  <section class="compare" id="compare">
+    <h2>Before and after.</h2>
+    <p class="section-sub">The same logic. A fraction of the tokens.</p>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <div class="compare-header">
+          <span class="compare-lang">Python</span>
+          <span class="compare-tokens">~856 tokens</span>
+        </div>
+        <pre><code><span class="kw">class</span> <span class="fn">Agent</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, id, role, capabilities):
+        self.id = id
+        self.role = role
+        self.capabilities = capabilities
+
+    <span class="kw">def</span> <span class="fn">execute</span>(self, task):
+        <span class="kw">if</span> task[<span class="str">'priority'</span>] > <span class="num">5</span>:
+            result = self.execute_immediate(task)
+            self.log_execution(task, <span class="str">'high_priority'</span>)
+        <span class="kw">else</span>:
+            result = self.enqueue_task(task)
+            self.log_execution(task, <span class="str">'normal'</span>)
+        <span class="kw">return</span> result
+
+    <span class="kw">def</span> <span class="fn">hire_subagent</span>(self, role, budget=<span class="num">500</span>):
+        <span class="kw">return</span> agent_spawn(role=role, max_cost=budget)
+
+    <span class="kw">def</span> <span class="fn">query_memory</span>(self, query, k=<span class="num">10</span>):
+        <span class="kw">return</span> memory_search(query=query, limit=k)
+
+tasks = [t <span class="kw">for</span> t <span class="kw">in</span> all_tasks
+    <span class="kw">if</span> t.status == <span class="str">'ready'</span>
+    <span class="kw">and</span> <span class="kw">not</span> t.blocked
+    <span class="kw">and</span> t.priority > <span class="num">5</span>]
+
+result = store(transform(validate(retrieve())))
+
+agents = [
+    {<span class="str">"id"</span>: <span class="str">"agt-001"</span>, <span class="str">"status"</span>: <span class="str">"active"</span>, <span class="str">"tasks"</span>: <span class="num">12</span>},
+    {<span class="str">"id"</span>: <span class="str">"agt-002"</span>, <span class="str">"status"</span>: <span class="str">"idle"</span>, <span class="str">"tasks"</span>: <span class="num">0</span>},
+    {<span class="str">"id"</span>: <span class="str">"agt-003"</span>, <span class="str">"status"</span>: <span class="str">"busy"</span>, <span class="str">"tasks"</span>: <span class="num">8</span>},
+]</code></pre>
+      </div>
+
+      <div class="compare-card nxl">
+        <div class="compare-header">
+          <span class="compare-lang">NXL</span>
+          <span class="compare-tokens">~355 tokens</span>
+        </div>
+        <pre><code><span class="fn">Agent</span>{id,role,capabilities}{
+  execute(task:<span class="type">Task</span>): <span class="sym">...</span>
+  hire_subagent(role:<span class="type">str</span>, budget:<span class="type">int</span>): <span class="sym">...</span>
+  query_memory(query:<span class="type">str</span>, k:<span class="type">int</span>): <span class="sym">...</span>
+}
+
+tasks <span class="sym">→</span> select <span class="sym">∈</span>(ready) <span class="sym">∩</span> <span class="sym">¬</span>(blocked) <span class="sym">∩</span> priority><span class="num">5</span>
+
+retrieve <span class="sym">∘</span> validate <span class="sym">∘</span> transform <span class="sym">∘</span> store
+
+<span class="fn">mem?</span>[query, recent=<span class="num">10</span>, threshold=<span class="num">0.7</span>]
+<span class="fn">hire!</span>[researcher, budget=<span class="num">500</span>]
+
+agents[<span class="num">3</span>]{id,status,tasks}:
+agt-001,active,<span class="num">12</span>
+agt-002,idle,<span class="num">0</span>
+agt-003,busy,<span class="num">8</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <h2>Five techniques. One language.</h2>
+    <p class="section-sub">Each technique is proven independently. NXL combines them all.</p>
+
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">→</div>
+        <h3>MetaGlyph Symbols</h3>
+        <p>Mathematical symbols LLMs already understand from training data. <code>∈ ⇒ ∩ ¬ ∘</code> replace verbose keywords. Every symbol has an ASCII fallback.</p>
+        <span class="feature-stat">60% reduction on control flow</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">{}</div>
+        <h3>TOON Format</h3>
+        <p>Token-Oriented Object Notation. Declare schema once, send only values. Eliminates repeated keys, quotes, and braces from structured data.</p>
+        <span class="feature-stat">57% reduction on data</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">...</div>
+        <h3>AST Folding</h3>
+        <p>Collapse method implementations to signatures. Show structure without body. Unfold on demand when the agent needs implementation details.</p>
+        <span class="feature-stat">80% reduction on code defs</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">?!</div>
+        <h3>Domain Shorthand</h3>
+        <p>Pattern-based abbreviations for common operations. <code>mem?[]</code> for search, <code>hire![]</code> for agents, <code>exec@[]</code> for execution. Extensible via config.</p>
+        <span class="feature-stat">70% reduction on API calls</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">BPE</div>
+        <h3>Custom Tokenizer</h3>
+        <p>BPE vocabulary trained on agent orchestration patterns. Common terms like "agent" and "memory" become single tokens instead of subword fragments.</p>
+        <span class="feature-stat">15-25% additional reduction</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install / Docs -->
+  <section class="docs" id="docs">
+    <h2>Get started in one line.</h2>
+
+    <div class="docs-grid">
+      <div class="doc-block">
+        <h3>Install</h3>
+        <div class="code-block">
+          <code>curl -fsSL https://nexus-prime.cfd/nxl/install.sh | sh</code>
+        </div>
+        <p class="doc-alt">Or clone manually:</p>
+        <div class="code-block">
+          <code>git clone https://github.com/sir-ad/NXL.git && cd NXL && pnpm install</code>
+        </div>
+      </div>
+
+      <div class="doc-block">
+        <h3>Compile</h3>
+        <div class="code-block">
+          <code>nxl compile file.nxl --target python</code>
+        </div>
+        <div class="code-block">
+          <code>nxl compile file.nxl --target js</code>
+        </div>
+      </div>
+
+      <div class="doc-block">
+        <h3>REPL</h3>
+        <div class="code-block">
+          <code>nxl repl</code>
+        </div>
+        <p class="doc-alt">Type NXL, see compiled output instantly.</p>
+      </div>
+
+      <div class="doc-block">
+        <h3>Compare tokens</h3>
+        <div class="code-block">
+          <code>nxl tokens file.nxl --compare original.py</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Syntax Reference -->
+  <section class="syntax">
+    <h2>Syntax at a glance.</h2>
+
+    <div class="syntax-grid">
+      <div class="syntax-card">
+        <h4>Pipeline</h4>
+        <pre><code>tasks <span class="sym">→</span> select <span class="sym">∈</span>(ready) <span class="sym">∩</span> <span class="sym">¬</span>(blocked)</code></pre>
+      </div>
+      <div class="syntax-card">
+        <h4>Conditional</h4>
+        <pre><code>priority><span class="num">5</span> <span class="sym">⇒</span> exec:immediate | log:high</code></pre>
+      </div>
+      <div class="syntax-card">
+        <h4>Composition</h4>
+        <pre><code>retrieve <span class="sym">∘</span> validate <span class="sym">∘</span> transform <span class="sym">∘</span> store</code></pre>
+      </div>
+      <div class="syntax-card">
+        <h4>Shorthand</h4>
+        <pre><code><span class="fn">mem?</span>[query, recent=<span class="num">10</span>]
+<span class="fn">hire!</span>[role, budget=<span class="num">500</span>]
+<span class="fn">exec@</span>[mode=parallel, timeout=<span class="num">30s</span>]</code></pre>
+      </div>
+      <div class="syntax-card">
+        <h4>TOON Data</h4>
+        <pre><code>agents[<span class="num">3</span>]{id,status,tasks}:
+agt-001,active,<span class="num">12</span>
+agt-002,idle,<span class="num">0</span>
+agt-003,busy,<span class="num">8</span></code></pre>
+      </div>
+      <div class="syntax-card">
+        <h4>AST Folding</h4>
+        <pre><code><span class="fn">Agent</span>{id,role}{
+  init(config:<span class="type">Config</span>): <span class="sym">...</span>
+  execute(task:<span class="type">Task</span>): <span class="sym">...</span>
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Symbol Reference -->
+  <section class="symbols">
+    <h2>Symbol reference.</h2>
+    <div class="symbol-table">
+      <div class="symbol-row header">
+        <span>Symbol</span><span>ASCII</span><span>Meaning</span><span>Example</span>
+      </div>
+      <div class="symbol-row"><span class="sym-big">→</span><span><code>-></code></span><span>Pipeline / transform</span><span><code>tasks → select ∈(ready)</code></span></div>
+      <div class="symbol-row"><span class="sym-big">∈</span><span>—</span><span>Membership</span><span><code>∈(active)</code></span></div>
+      <div class="symbol-row"><span class="sym-big">⇒</span><span><code>=></code></span><span>Implies / conditional</span><span><code>x>5 ⇒ action:run</code></span></div>
+      <div class="symbol-row"><span class="sym-big">∩</span><span><code>&&</code></span><span>Intersection</span><span><code>∈(ready) ∩ ¬(blocked)</code></span></div>
+      <div class="symbol-row"><span class="sym-big">¬</span><span><code>!</code></span><span>Negation</span><span><code>¬(blocked)</code></span></div>
+      <div class="symbol-row"><span class="sym-big">∘</span><span><code>|></code></span><span>Composition</span><span><code>validate ∘ transform ∘ store</code></span></div>
+      <div class="symbol-row"><span class="sym-big">...</span><span>—</span><span>Folded body</span><span><code>execute(task:Task): ...</code></span></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <span class="logo">NXL</span>
+      <span>Open source. MIT License.</span>
+      <a href="https://github.com/sir-ad/NXL">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    function copy(btn) {
+      const code = btn.previousElementSibling.textContent;
+      navigator.clipboard.writeText(code);
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
