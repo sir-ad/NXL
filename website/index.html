@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NXL — Less tokens. Same meaning.</title>
-  <meta name="description" content="NXL reduces LLM token consumption by 70%. A programming language designed for the age of AI.">
+  <meta name="description" content="NXL is a programming language that reduces LLM token consumption by 70%. Execute programs, run agents, type-check and format — all in one tool.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#compare">Compare</a>
+      <a href="#run">Run</a>
       <a href="#docs">Docs</a>
       <a href="https://github.com/sir-ad/NXL" target="_blank">GitHub</a>
     </div>
@@ -25,14 +26,19 @@
 
   <!-- Hero -->
   <section class="hero">
-    <p class="hero-label">Open Source</p>
+    <p class="hero-label">Open Source &middot; v0.3.0</p>
     <h1>Less tokens.<br>Same meaning.</h1>
-    <p class="hero-sub">NXL is a programming language that reduces LLM token consumption by 70%.<br>Built for agents, memory systems, and anyone shipping AI.</p>
+    <p class="hero-sub">NXL is a programming language that reduces LLM token consumption by 70%.<br>Write once. Run natively. Ship to agents.</p>
     <div class="hero-install">
       <code>curl -fsSL https://nexus-prime.cfd/nxl/install.sh | sh</code>
       <button onclick="copy(this)" aria-label="Copy">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </button>
+    </div>
+    <div class="hero-links">
+      <a href="https://github.com/sir-ad/NXL/releases/latest" target="_blank">Latest release</a>
+      <span class="divider">&middot;</span>
+      <a href="https://github.com/sir-ad/NXL" target="_blank">View on GitHub</a>
     </div>
   </section>
 
@@ -43,16 +49,69 @@
       <span class="number-label">Token reduction</span>
     </div>
     <div class="number-card">
-      <span class="number-value">95%+</span>
-      <span class="number-label">Semantic equivalence</span>
+      <span class="number-value">244</span>
+      <span class="number-label">Passing tests</span>
     </div>
     <div class="number-card">
-      <span class="number-value">5</span>
-      <span class="number-label">Techniques combined</span>
+      <span class="number-value">9</span>
+      <span class="number-label">Packages</span>
     </div>
     <div class="number-card">
       <span class="number-value">&lt;10ms</span>
-      <span class="number-label">Compilation time</span>
+      <span class="number-label">Parse time</span>
+    </div>
+  </section>
+
+  <!-- What's New v0.3.0 -->
+  <section class="whats-new" id="run">
+    <h2>NXL now runs.</h2>
+    <p class="section-sub">v0.3.0 ships a full language runtime — interpreter, type checker, modules, and agent primitives.</p>
+
+    <div class="changelog-grid">
+      <div class="changelog-item">
+        <span class="changelog-badge new">v0.2.0</span>
+        <h4>Interpreter + Agent Runtime</h4>
+        <p><code>nxl run</code> executes programs natively. <code>mem?</code> · <code>tool!</code> · <code>llm@</code> are real primitives backed by a vector store and the Anthropic API.</p>
+        <div class="code-snippet"><pre><code><span class="fn">nxl</span> run agent.nxl <span class="flag">--agent</span></code></pre></div>
+      </div>
+
+      <div class="changelog-item">
+        <span class="changelog-badge new">v0.3.0</span>
+        <h4>Gradual Type Checker</h4>
+        <p>Optional type annotations. Infers <code>num</code> · <code>str</code> · <code>bool</code> · <code>list&lt;T&gt;</code> · <code>fn</code>. Zero false positives on untyped code.</p>
+        <div class="code-snippet"><pre><code><span class="fn">nxl</span> check script.nxl</code></pre></div>
+      </div>
+
+      <div class="changelog-item">
+        <span class="changelog-badge new">v0.3.0</span>
+        <h4>Module System</h4>
+        <p>Import across files with <code>use "./path"</code>. Export with <code>pub</code>. Modules are cached and isolated.</p>
+        <div class="code-snippet"><pre><code><span class="kw">use</span> <span class="str">"./math"</span>
+<span class="kw">pub</span> area(r): PI * r * r</code></pre></div>
+      </div>
+
+      <div class="changelog-item">
+        <span class="changelog-badge new">v0.3.0</span>
+        <h4>Formatter &amp; Linter</h4>
+        <p>Canonical formatting and static analysis out of the box.</p>
+        <div class="code-snippet"><pre><code><span class="fn">nxl</span> fmt script.nxl <span class="flag">--write</span>
+<span class="fn">nxl</span> lint script.nxl</code></pre></div>
+      </div>
+
+      <div class="changelog-item">
+        <span class="changelog-badge new">v0.3.0</span>
+        <h4>50+ Standard Library Functions</h4>
+        <p>File I/O · HTTP · Regex · Paths · Time · Random · String · Math · Collections — all built in, no imports needed.</p>
+        <div class="code-snippet"><pre><code>data = fetch_url(<span class="str">"https://api.example.com"</span>)
+rows = regex_find(<span class="str">"\d+"</span>, data.text)</code></pre></div>
+      </div>
+
+      <div class="changelog-item">
+        <span class="changelog-badge">Phase 8</span>
+        <h4>Self-Hosting (Started)</h4>
+        <p>A working NXL lexer written in NXL. The path to a fully self-hosted implementation begins.</p>
+        <div class="code-snippet"><pre><code><span class="fn">nxl</span> run examples/self-host/lexer.nxl</code></pre></div>
+      </div>
     </div>
   </section>
 
@@ -130,10 +189,16 @@ agt-003,busy,<span class="num">8</span></code></pre>
 
   <!-- Features -->
   <section class="features" id="features">
-    <h2>Five techniques. One language.</h2>
-    <p class="section-sub">Each technique is proven independently. NXL combines them all.</p>
+    <h2>One language. Complete toolchain.</h2>
+    <p class="section-sub">Token compression, native execution, agent primitives, and developer tools — all in one.</p>
 
     <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">▶</div>
+        <h3>Native Interpreter</h3>
+        <p><code>nxl run</code> executes NXL programs directly — no transpile step. Functions, closures, pattern matching, loops, and modules all work natively.</p>
+        <span class="feature-stat">Full language runtime</span>
+      </div>
       <div class="feature">
         <div class="feature-icon">→</div>
         <h3>MetaGlyph Symbols</h3>
@@ -147,22 +212,40 @@ agt-003,busy,<span class="num">8</span></code></pre>
         <span class="feature-stat">57% reduction on data</span>
       </div>
       <div class="feature">
+        <div class="feature-icon">?!</div>
+        <h3>Agent Primitives</h3>
+        <p><code>mem?[]</code> · <code>tool![]</code> · <code>llm@[]</code> · <code>hire![]</code> are first-class built-ins backed by a real vector store, tool registry, and Anthropic API.</p>
+        <span class="feature-stat">Run with --agent flag</span>
+      </div>
+      <div class="feature">
         <div class="feature-icon">...</div>
         <h3>AST Folding</h3>
         <p>Collapse method implementations to signatures. Show structure without body. Unfold on demand when the agent needs implementation details.</p>
         <span class="feature-stat">80% reduction on code defs</span>
       </div>
       <div class="feature">
-        <div class="feature-icon">?!</div>
-        <h3>Domain Shorthand</h3>
-        <p>Pattern-based abbreviations for common operations. <code>mem?[]</code> for search, <code>hire![]</code> for agents, <code>exec@[]</code> for execution. Extensible via config.</p>
-        <span class="feature-stat">70% reduction on API calls</span>
+        <div class="feature-icon">T?</div>
+        <h3>Gradual Types</h3>
+        <p>Type annotations are optional — inferred where possible, checked where present. <code>nxl check</code> surfaces real errors without false positives on dynamic code.</p>
+        <span class="feature-stat">nxl check script.nxl</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">use</div>
+        <h3>Module System</h3>
+        <p>Import bindings across files with <code>use "./path"</code>. Export with <code>pub</code>. Module execution is cached and isolated.</p>
+        <span class="feature-stat">File-based imports</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">fmt</div>
+        <h3>Formatter &amp; Linter</h3>
+        <p><code>nxl fmt</code> normalises indentation and style. <code>nxl lint</code> flags undefined variables, unreachable code, unused bindings, and empty functions.</p>
+        <span class="feature-stat">nxl fmt · nxl lint</span>
       </div>
       <div class="feature">
         <div class="feature-icon">BPE</div>
         <h3>Custom Tokenizer</h3>
         <p>BPE vocabulary trained on agent orchestration patterns. Common terms like "agent" and "memory" become single tokens instead of subword fragments.</p>
-        <span class="feature-stat">15-25% additional reduction</span>
+        <span class="feature-stat">15–25% additional reduction</span>
       </div>
     </div>
   </section>
@@ -177,35 +260,45 @@ agt-003,busy,<span class="num">8</span></code></pre>
         <div class="code-block">
           <code>curl -fsSL https://nexus-prime.cfd/nxl/install.sh | sh</code>
         </div>
-        <p class="doc-alt">Or clone manually:</p>
+        <p class="doc-alt">Or clone:</p>
         <div class="code-block">
-          <code>git clone https://github.com/sir-ad/NXL.git && cd NXL && pnpm install</code>
+          <code>git clone https://github.com/sir-ad/NXL.git &amp;&amp; cd NXL &amp;&amp; pnpm install</code>
         </div>
       </div>
 
       <div class="doc-block">
-        <h3>Compile</h3>
+        <h3>Run</h3>
         <div class="code-block">
-          <code>nxl compile file.nxl --target python</code>
+          <code>nxl run script.nxl</code>
         </div>
         <div class="code-block">
-          <code>nxl compile file.nxl --target js</code>
+          <code>nxl run agent.nxl --agent</code>
+        </div>
+        <p class="doc-alt">--agent wires up mem/tool/llm primitives.</p>
+      </div>
+
+      <div class="doc-block">
+        <h3>Check &amp; Format</h3>
+        <div class="code-block">
+          <code>nxl check script.nxl</code>
+        </div>
+        <div class="code-block">
+          <code>nxl fmt script.nxl --write</code>
+        </div>
+        <div class="code-block">
+          <code>nxl lint script.nxl</code>
         </div>
       </div>
 
       <div class="doc-block">
-        <h3>REPL</h3>
+        <h3>REPL &amp; Compile</h3>
         <div class="code-block">
           <code>nxl repl</code>
         </div>
-        <p class="doc-alt">Type NXL, see compiled output instantly.</p>
-      </div>
-
-      <div class="doc-block">
-        <h3>Compare tokens</h3>
         <div class="code-block">
-          <code>nxl tokens file.nxl --compare original.py</code>
+          <code>nxl compile file.nxl --target python</code>
         </div>
+        <p class="doc-alt">REPL evaluates NXL interactively with persistent state.</p>
       </div>
     </div>
   </section>
@@ -220,18 +313,26 @@ agt-003,busy,<span class="num">8</span></code></pre>
         <pre><code>tasks <span class="sym">→</span> select <span class="sym">∈</span>(ready) <span class="sym">∩</span> <span class="sym">¬</span>(blocked)</code></pre>
       </div>
       <div class="syntax-card">
-        <h4>Conditional</h4>
-        <pre><code>priority><span class="num">5</span> <span class="sym">⇒</span> exec:immediate | log:high</code></pre>
+        <h4>Functions</h4>
+        <pre><code><span class="fn">fib</span>(n): n &lt; <span class="num">2</span> ? n : fib(n-<span class="num">1</span>) + fib(n-<span class="num">2</span>)
+<span class="fn">sum</span>(xs): {
+  t = <span class="num">0</span>
+  <span class="kw">for</span> x <span class="sym">∈</span> xs: t = t + x
+  <span class="kw">return</span> t
+}</code></pre>
       </div>
       <div class="syntax-card">
-        <h4>Composition</h4>
-        <pre><code>retrieve <span class="sym">∘</span> validate <span class="sym">∘</span> transform <span class="sym">∘</span> store</code></pre>
+        <h4>Pattern Match</h4>
+        <pre><code>classify(x): <span class="kw">match</span> x
+  | <span class="num">0</span> <span class="sym">→</span> <span class="str">"zero"</span>
+  | n <span class="kw">if</span> n > <span class="num">0</span> <span class="sym">→</span> <span class="str">"positive"</span>
+  | _ <span class="sym">→</span> <span class="str">"negative"</span></code></pre>
       </div>
       <div class="syntax-card">
-        <h4>Shorthand</h4>
+        <h4>Agent Shorthand</h4>
         <pre><code><span class="fn">mem?</span>[query, recent=<span class="num">10</span>]
 <span class="fn">hire!</span>[role, budget=<span class="num">500</span>]
-<span class="fn">exec@</span>[mode=parallel, timeout=<span class="num">30s</span>]</code></pre>
+<span class="fn">llm@</span>[prompt=<span class="str">"summarise: "</span> + ctx]</code></pre>
       </div>
       <div class="syntax-card">
         <h4>TOON Data</h4>
@@ -241,11 +342,10 @@ agt-002,idle,<span class="num">0</span>
 agt-003,busy,<span class="num">8</span></code></pre>
       </div>
       <div class="syntax-card">
-        <h4>AST Folding</h4>
-        <pre><code><span class="fn">Agent</span>{id,role}{
-  init(config:<span class="type">Config</span>): <span class="sym">...</span>
-  execute(task:<span class="type">Task</span>): <span class="sym">...</span>
-}</code></pre>
+        <h4>Modules</h4>
+        <pre><code><span class="kw">use</span> <span class="str">"./math"</span>
+<span class="kw">pub</span> area(r): PI * r * r
+<span class="kw">pub</span> VERSION = <span class="str">"1.0"</span></code></pre>
       </div>
     </div>
   </section>
@@ -260,7 +360,7 @@ agt-003,busy,<span class="num">8</span></code></pre>
       <div class="symbol-row"><span class="sym-big">→</span><span><code>-></code></span><span>Pipeline / transform</span><span><code>tasks → select ∈(ready)</code></span></div>
       <div class="symbol-row"><span class="sym-big">∈</span><span>—</span><span>Membership</span><span><code>∈(active)</code></span></div>
       <div class="symbol-row"><span class="sym-big">⇒</span><span><code>=></code></span><span>Implies / conditional</span><span><code>x>5 ⇒ action:run</code></span></div>
-      <div class="symbol-row"><span class="sym-big">∩</span><span><code>&&</code></span><span>Intersection</span><span><code>∈(ready) ∩ ¬(blocked)</code></span></div>
+      <div class="symbol-row"><span class="sym-big">∩</span><span><code>&&</code></span><span>Intersection / and</span><span><code>∈(ready) ∩ ¬(blocked)</code></span></div>
       <div class="symbol-row"><span class="sym-big">¬</span><span><code>!</code></span><span>Negation</span><span><code>¬(blocked)</code></span></div>
       <div class="symbol-row"><span class="sym-big">∘</span><span><code>|></code></span><span>Composition</span><span><code>validate ∘ transform ∘ store</code></span></div>
       <div class="symbol-row"><span class="sym-big">...</span><span>—</span><span>Folded body</span><span><code>execute(task:Task): ...</code></span></div>
