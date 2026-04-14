@@ -22,7 +22,16 @@ export type Statement =
   | AssignmentStatement
   | ExpressionStatement
   | ToonBlock
-  | TypeDeclaration;
+  | TypeDeclaration
+  // Phase 2
+  | FunctionDeclaration
+  | IfStatement
+  | ForStatement
+  | WhileStatement
+  | ReturnStatement
+  | BreakStatement
+  | ContinueStatement
+  | BlockStatement;
 
 export interface PipelineStatement extends NodeBase {
   kind: 'PipelineStatement';
@@ -76,7 +85,12 @@ export type Expression =
   | NumberLiteral
   | StringLiteral
   | BooleanLiteral
-  | ArrayLiteral;
+  | NullLiteral
+  | ArrayLiteral
+  // Phase 2
+  | FunctionExpression
+  | IfExpression
+  | MatchExpression;
 
 export interface BinaryExpression extends NodeBase {
   kind: 'BinaryExpression';
@@ -145,6 +159,10 @@ export interface BooleanLiteral extends NodeBase {
   value: boolean;
 }
 
+export interface NullLiteral extends NodeBase {
+  kind: 'NullLiteral';
+}
+
 export interface ArrayLiteral extends NodeBase {
   kind: 'ArrayLiteral';
   elements: Expression[];
@@ -196,6 +214,90 @@ export interface TypeExpr extends NodeBase {
   typeArgs: TypeExpr[];
 }
 
+// ===== Phase 2: Functions & Control Flow =====
+
+export interface FunctionDeclaration extends NodeBase {
+  kind: 'FunctionDeclaration';
+  name: string;
+  params: Param[];
+  body: Expression | Statement[];
+  loc: SourceLocation;
+}
+
+export interface FunctionExpression extends NodeBase {
+  kind: 'FunctionExpression';
+  name: string | null;
+  params: Param[];
+  body: Expression | Statement[];
+  loc: SourceLocation;
+}
+
+export interface IfStatement extends NodeBase {
+  kind: 'IfStatement';
+  condition: Expression;
+  then: Statement[];
+  else: Statement[] | null;
+}
+
+export interface IfExpression extends NodeBase {
+  kind: 'IfExpression';
+  condition: Expression;
+  then: Expression;
+  else: Expression | null;
+}
+
+export interface ForStatement extends NodeBase {
+  kind: 'ForStatement';
+  variable: string;
+  iterable: Expression;
+  body: Statement[];
+}
+
+export interface WhileStatement extends NodeBase {
+  kind: 'WhileStatement';
+  condition: Expression;
+  body: Statement[];
+}
+
+export interface MatchExpression extends NodeBase {
+  kind: 'MatchExpression';
+  subject: Expression;
+  arms: MatchArm[];
+}
+
+export interface MatchArm extends NodeBase {
+  kind: 'MatchArm';
+  pattern: MatchPattern;
+  guard: Expression | null;
+  body: Expression;
+}
+
+export type MatchPattern =
+  | { kind: 'WildcardPattern'; loc: SourceLocation }
+  | NumberLiteral
+  | StringLiteral
+  | BooleanLiteral
+  | NullLiteral
+  | Identifier;
+
+export interface ReturnStatement extends NodeBase {
+  kind: 'ReturnStatement';
+  value: Expression | null;
+}
+
+export interface BreakStatement extends NodeBase {
+  kind: 'BreakStatement';
+}
+
+export interface ContinueStatement extends NodeBase {
+  kind: 'ContinueStatement';
+}
+
+export interface BlockStatement extends NodeBase {
+  kind: 'BlockStatement';
+  statements: Statement[];
+}
+
 // ===== Node type union =====
 
 export type Node =
@@ -210,4 +312,5 @@ export type Node =
   | MethodSignature
   | Param
   | TypeExpr
-  | ShorthandArg;
+  | ShorthandArg
+  | MatchArm;

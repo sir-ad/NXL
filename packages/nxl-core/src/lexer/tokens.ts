@@ -11,12 +11,24 @@ export enum TokenType {
   Select,         // select
   True,           // true
   False,          // false
+  If,             // if
+  Else,           // else
+  For,            // for
+  While,          // while
+  Match,          // match
+  Return,         // return
+  Break,          // break
+  Continue,       // continue
+  Null,           // null
 
   // Operators
   Plus,           // +
   Minus,          // -
   Star,           // *
   Slash,          // /
+  Percent,        // %
+  Power,          // **
+  Or,             // ||
   Gt,             // >
   Lt,             // <
   Gte,            // >=
@@ -70,6 +82,15 @@ export const KEYWORDS: Record<string, TokenType> = {
   select: TokenType.Select,
   true: TokenType.True,
   false: TokenType.False,
+  if: TokenType.If,
+  else: TokenType.Else,
+  for: TokenType.For,
+  while: TokenType.While,
+  match: TokenType.Match,
+  return: TokenType.Return,
+  break: TokenType.Break,
+  continue: TokenType.Continue,
+  null: TokenType.Null,
 };
 
 // Maps Unicode MetaGlyph symbols to their token types
@@ -93,10 +114,22 @@ export const TOKEN_NAMES: Record<TokenType, string> = {
   [TokenType.Select]: 'select',
   [TokenType.True]: 'true',
   [TokenType.False]: 'false',
+  [TokenType.If]: 'if',
+  [TokenType.Else]: 'else',
+  [TokenType.For]: 'for',
+  [TokenType.While]: 'while',
+  [TokenType.Match]: 'match',
+  [TokenType.Return]: 'return',
+  [TokenType.Break]: 'break',
+  [TokenType.Continue]: 'continue',
+  [TokenType.Null]: 'null',
   [TokenType.Plus]: '+',
   [TokenType.Minus]: '-',
   [TokenType.Star]: '*',
   [TokenType.Slash]: '/',
+  [TokenType.Percent]: '%',
+  [TokenType.Power]: '**',
+  [TokenType.Or]: '||',
   [TokenType.Gt]: '>',
   [TokenType.Lt]: '<',
   [TokenType.Gte]: '>=',

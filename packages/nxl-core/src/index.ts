@@ -36,6 +36,7 @@ export type {
   NumberLiteral,
   StringLiteral,
   BooleanLiteral,
+  NullLiteral,
   ArrayLiteral,
   ToonBlock,
   ToonRow,
@@ -45,6 +46,20 @@ export type {
   Param,
   TypeExpr,
   Node,
+  // Phase 2
+  FunctionDeclaration,
+  FunctionExpression,
+  IfStatement,
+  IfExpression,
+  ForStatement,
+  WhileStatement,
+  MatchExpression,
+  MatchArm,
+  MatchPattern,
+  ReturnStatement,
+  BreakStatement,
+  ContinueStatement,
+  BlockStatement,
 } from './ast/index.js';
 
 export { walk, type Visitor } from './ast/index.js';

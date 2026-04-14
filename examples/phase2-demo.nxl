@@ -1,0 +1,80 @@
+// Phase 2 demo: functions, closures, control flow, pattern matching
+// NOTE: Use spaces around - operator: write "n - 1" not "n-1"
+
+// --- Functions ---
+print("--- Functions ---")
+
+square(x): x * x
+print("square(7):", square(7))
+
+// Fibonacci — recursion (spaces required around minus)
+fib(n): n < 2 ? n : fib(n - 1) + fib(n - 2)
+print("fib(10):", fib(10))
+
+// Block body with return
+factorial(n): {
+  if n <= 1 {
+    return 1
+  }
+  return n * factorial(n - 1)
+}
+print("factorial(10):", factorial(10))
+
+// --- Closures ---
+print("\n--- Closures ---")
+make_counter(): {
+  n = 0
+  return (): {
+    n = n + 1
+    return n
+  }
+}
+c = make_counter()
+print("counter:", c(), c(), c())
+
+// --- Control Flow ---
+print("\n--- Control Flow ---")
+total = 0
+for i ∈ range(1, 11) {
+  total = total + i
+}
+print("sum 1..10:", total)
+
+x = 1
+while x < 100 {
+  x = x * 2
+}
+print("first power of 2 >= 100:", x)
+
+// If / else if / else
+classify(n): {
+  if n > 0 {
+    return "positive"
+  } else if n < 0 {
+    return "negative"
+  } else {
+    return "zero"
+  }
+}
+print("classify(5):", classify(5))
+print("classify(-3):", classify(-3))
+print("classify(0):", classify(0))
+
+// --- Pattern Matching ---
+print("\n--- Pattern Matching ---")
+describe(x): match x
+  | 0 → "zero"
+  | 1 → "one"
+  | n if n < 0 → "negative"
+  | _ → "other"
+
+print("describe(0):", describe(0))
+print("describe(1):", describe(1))
+print("describe(-5):", describe(-5))
+print("describe(42):", describe(42))
+
+// --- Higher-order ---
+print("\n--- Higher-order ---")
+apply(f, x): f(x)
+double(x): x * 2
+print("apply(double, 21):", apply(double, 21))

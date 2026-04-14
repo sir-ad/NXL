@@ -245,8 +245,18 @@ export class Lexer {
       this.advance(); this.advance();
       return tok;
     }
+    if (ch === '|' && next === '|') {
+      const tok = this.makeToken(TokenType.Or, '||');
+      this.advance(); this.advance();
+      return tok;
+    }
     if (ch === '|' && next === '>') {
       const tok = this.makeToken(TokenType.Compose, '|>');
+      this.advance(); this.advance();
+      return tok;
+    }
+    if (ch === '*' && next === '*') {
+      const tok = this.makeToken(TokenType.Power, '**');
       this.advance(); this.advance();
       return tok;
     }
@@ -280,6 +290,7 @@ export class Lexer {
       case '-': return TokenType.Minus;
       case '*': return TokenType.Star;
       case '/': return TokenType.Slash;
+      case '%': return TokenType.Percent;
       case '>': return TokenType.Gt;
       case '<': return TokenType.Lt;
       case '=': return TokenType.Assign;

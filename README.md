@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/sir-ad/NXL/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/tests-83%20passing-brightgreen?style=flat-square" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-168%20passing-brightgreen?style=flat-square" alt="Tests">
   <img src="https://img.shields.io/badge/token%20reduction-70%25-black?style=flat-square" alt="Token Reduction">
   <img src="https://img.shields.io/badge/semantic%20equivalence-95%25+-blue?style=flat-square" alt="Semantic Equivalence">
   <a href="https://nexus-prime.cfd/nxl"><img src="https://img.shields.io/badge/docs-nexus--prime.cfd%2Fnxl-0066cc?style=flat-square" alt="Docs"></a>
@@ -31,7 +31,7 @@ The consequences compound:
 
 ## What is NXL?
 
-**NXL** is a programming language that reduces LLM token consumption by 70% while maintaining full semantic equivalence. It combines five proven compression techniques into a single, coherent syntax that LLMs already understand from their training data.
+**NXL** is a full programming language built for LLMs and agents. It reduces token consumption by 70% while shipping a complete runtime: tree-walking interpreter, closures, pattern matching, and built-in agent primitives (`mem?`, `tool!`, `llm@`) that wire to real backends.
 
 ```
 // Python — 856 tokens                        // NXL — 355 tokens (58% reduction)
@@ -71,10 +71,44 @@ git clone https://github.com/sir-ad/NXL.git && cd NXL && pnpm install
 ## Usage
 
 ```bash
+nxl run file.nxl                        # Execute an NXL program
+nxl run file.nxl --agent               # Execute with agent runtime (mem/tool/llm)
+nxl repl                                # Interactive REPL (interpreter mode)
 nxl compile file.nxl --target python    # Compile to Python
 nxl compile file.nxl --target js        # Compile to JavaScript
-nxl repl                                # Interactive REPL
 nxl tokens file.nxl --compare orig.py   # Token comparison
+```
+
+### NXL in 60 seconds
+
+```nxl
+// Functions (no keyword — saves tokens)
+fib(n): n < 2 ? n : fib(n - 1) + fib(n - 2)
+print(fib(10))   // 55
+
+// Closures
+make_counter(): {
+  n = 0
+  return (): { n = n + 1; return n }
+}
+c = make_counter()
+print(c(), c(), c())   // 1 2 3
+
+// For loop + pattern matching
+classify(x): match x
+  | 0 → "zero"
+  | n if n < 0 → "negative"
+  | _ → "positive"
+
+for i ∈ [0, -1, 5] {
+  print(classify(i))
+}
+
+// Agent primitives (--agent flag)
+mem!["NXL is built for agents"]
+results = mem?["agents language"]
+weather = tool!["get_weather", city="SF"]
+answer = llm@[prompt="What is NXL?", model="claude-haiku-4-5-20251001"]
 ```
 
 ---
@@ -149,18 +183,20 @@ bun benchmarks/run-benchmark.ts
 
 ```
 packages/
-  nxl-core/       # Lexer, parser, AST — hand-written recursive descent
-  nxl-toon/       # TOON serializer/deserializer
-  nxl-compiler/   # NXL → Python / JavaScript transpiler
-  nxl-compress/   # Python / JavaScript → NXL compressor
-  nxl-tokenizer/  # Custom BPE tokenizer
-  nxl-cli/        # Command-line interface
+  nxl-core/         # Lexer, parser, AST — hand-written recursive descent
+  nxl-interpreter/  # Tree-walking interpreter, closures, builtins, shorthand registry
+  nxl-runtime/      # Agent runtime: memory store, tool registry, Anthropic LLM, subagents
+  nxl-compiler/     # NXL → Python / JavaScript transpiler
+  nxl-compress/     # Python / JavaScript → NXL compressor
+  nxl-toon/         # TOON serializer/deserializer
+  nxl-tokenizer/    # Custom BPE tokenizer
+  nxl-cli/          # Command-line interface (run, repl, compile, tokens)
 ```
 
 ## Tests
 
 ```bash
-pnpm test     # 83 tests across all packages
+bun test     # 168 tests across all packages
 ```
 
 ---

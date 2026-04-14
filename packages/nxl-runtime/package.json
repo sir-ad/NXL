@@ -1,0 +1,28 @@
+{
+  "name": "@nxl/runtime",
+  "version": "0.1.0",
+  "description": "NXL agent-native runtime — memory, tools, LLM, subagents",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@nxl/core": "workspace:*",
+    "@nxl/interpreter": "workspace:*",
+    "@anthropic-ai/sdk": "^0.39.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "files": [
+    "dist"
+  ]
+}

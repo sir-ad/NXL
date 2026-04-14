@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { compileCommand } from './commands/compile.js';
 import { replCommand } from './commands/repl.js';
 import { tokensCommand } from './commands/tokens.js';
+import { runCommand } from './commands/run.js';
 
 const program = new Command();
 
@@ -19,9 +20,15 @@ program
   .action(compileCommand);
 
 program
+  .command('run <file>')
+  .description('Execute an NXL file')
+  .option('--time', 'Print execution time')
+  .option('--agent', 'Enable agent runtime (mem/tool/llm shorthands)')
+  .action(runCommand);
+
+program
   .command('repl')
   .description('Start interactive NXL REPL')
-  .option('-t, --target <target>', 'Target language (python|javascript)', 'python')
   .action(replCommand);
 
 program

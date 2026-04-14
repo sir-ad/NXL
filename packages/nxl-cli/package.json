@@ -13,6 +13,8 @@
     "@nxl/compress": "workspace:*",
     "@nxl/toon": "workspace:*",
     "@nxl/tokenizer": "workspace:*",
+    "@nxl/interpreter": "workspace:*",
+    "@nxl/runtime": "workspace:*",
     "commander": "^13.0.0",
     "chalk": "^5.4.0"
   },

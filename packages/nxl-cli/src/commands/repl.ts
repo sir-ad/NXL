@@ -1,13 +1,10 @@
 import { createInterface } from 'node:readline';
-import { compile, type Target } from '@nxl/compiler';
+import { parse } from '@nxl/core';
+import { Interpreter, Environment, RuntimeError, display } from '@nxl/interpreter';
 
-interface ReplOpts {
-  target: string;
-}
-
-export function replCommand(opts: ReplOpts): void {
-  const target: Target = opts.target === 'js' || opts.target === 'javascript'
-    ? 'javascript' : 'python';
+export function replCommand(_opts: Record<string, unknown>): void {
+  const interp = new Interpreter();
+  const env = interp.globals;
 
   const rl = createInterface({
     input: process.stdin,
@@ -15,15 +12,13 @@ export function replCommand(opts: ReplOpts): void {
     prompt: 'nxl> ',
   });
 
-  console.log(`NXL REPL v0.1.0 (target: ${target})`);
-  console.log('Type NXL code and press Enter to see compiled output.');
-  console.log('Commands: :target py|js, :quit\n');
-
-  let currentTarget = target;
+  console.log('NXL v0.2.0 — interpreter mode');
+  console.log('Commands: :reset  :quit  :env');
+  console.log('');
 
   rl.prompt();
 
-  rl.on('line', (line: string) => {
+  rl.on('line', async (line: string) => {
     const trimmed = line.trim();
 
     if (trimmed === ':quit' || trimmed === ':q') {
@@ -31,16 +26,29 @@ export function replCommand(opts: ReplOpts): void {
       return;
     }
 
-    if (trimmed.startsWith(':target ')) {
-      const t = trimmed.slice(8).trim();
-      if (t === 'py' || t === 'python') {
-        currentTarget = 'python';
-        console.log('Target: python');
-      } else if (t === 'js' || t === 'javascript') {
-        currentTarget = 'javascript';
-        console.log('Target: javascript');
+    if (trimmed === ':reset') {
+      // Clear user-defined variables (re-use same interp so builtins stay)
+      const fresh = new Interpreter();
+      // Replace globals in-place by copying builtins back
+      (interp as any).globals = fresh.globals;
+      console.log('Environment reset.');
+      rl.prompt();
+      return;
+    }
+
+    if (trimmed === ':env') {
+      const store = (env as any).store as Map<string, unknown>;
+      const userKeys = [...store.keys()].filter(k => {
+        const v = store.get(k) as any;
+        return v?.kind !== 'native';
+      });
+      if (userKeys.length === 0) {
+        console.log('(no user variables)');
       } else {
-        console.log('Unknown target. Use :target py or :target js');
+        for (const k of userKeys) {
+          const v = store.get(k) as any;
+          console.log(`  ${k} = ${display(v)}`);
+        }
       }
       rl.prompt();
       return;
@@ -52,11 +60,18 @@ export function replCommand(opts: ReplOpts): void {
     }
 
     try {
-      const result = compile(trimmed, currentTarget);
-      console.log(result.output);
+      const program = parse(trimmed);
+      const result = await interp.runInEnv(program, env, trimmed);
+      if (result.kind !== 'null') {
+        console.log(display(result));
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`Error: ${msg}`);
+      if (err instanceof RuntimeError) {
+        console.error(err.format());
+      } else {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`Error: ${msg}`);
+      }
     }
 
     rl.prompt();

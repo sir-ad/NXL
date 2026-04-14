@@ -1,0 +1,41 @@
+// Phase 1 demo: NXL interpreter running real code
+
+// Arithmetic
+print("--- Arithmetic ---")
+x = 10
+y = 3
+print("10 + 3 =", x + y)
+print("10 * 3 =", x * y)
+print("2 ** 8 =", 2 ** 8)
+print("10 % 3 =", x % y)
+
+// String operations
+print("\n--- Strings ---")
+greeting = "Hello, " + "NXL!"
+print(greeting)
+print("Length:", len(greeting))
+print("Upper:", upper(greeting))
+
+// Collections
+print("\n--- Collections ---")
+nums = range(1, 11)
+print("Sum 1..10:", sum(nums))
+print("Max:", max(nums))
+
+// Pipeline filtering
+print("\n--- Pipeline ---")
+data = [5, 12, 3, 8, 1, 15, 7]
+data → select x>6
+
+// JSON
+print("\n--- JSON ---")
+agent = json_decode('{"name":"Atlas","version":1,"active":true}')
+print("Agent:", agent.name, "v" + str(agent.version))
+
+// Conditional action
+print("\n--- Conditionals ---")
+score = 85
+grade = "F"
+score >= 90 ⇒ grade: "A"
+score >= 80 ⇒ grade: "B"
+print("Score", score, "grade:", grade)

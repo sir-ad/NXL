@@ -1,0 +1,32 @@
+// Phase 6 demo: agent-native runtime
+// Run with: nxl run examples/agent-demo.nxl --agent
+
+print("=== NXL Agent Demo ===\n")
+
+// --- Memory ---
+print("--- Memory Store ---")
+mem!["NXL is a token-efficient language designed for LLMs and agents"]
+mem!["The agent runtime supports mem, tool, and llm primitives"]
+mem!["Pattern matching with match and guard expressions"]
+
+results = mem?["token efficient language agents"]
+print("Memory results:", len(results), "found")
+
+// --- Tools ---
+print("\n--- Tool Invocation ---")
+weather = tool!["get_weather", city="San Francisco"]
+print("Weather:", weather.city, "—", weather.conditions, weather.temp)
+
+available = tool!["list_tools"]
+print("Available tools:", available)
+
+// --- LLM (requires ANTHROPIC_API_KEY) ---
+print("\n--- LLM Call ---")
+response = llm@[
+  prompt="In one sentence, what is NXL?",
+  model="claude-haiku-4-5-20251001",
+  max_tokens=100
+]
+print("LLM says:", response)
+
+print("\n=== Done ===")

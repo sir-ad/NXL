@@ -30,6 +30,48 @@ export class Parser {
   private parseStatement(): AST.Statement | null {
     const token = this.current();
 
+    // Phase 2: if statement
+    if (token.type === TokenType.If) {
+      return this.parseIfStatement();
+    }
+
+    // Phase 2: for loop
+    if (token.type === TokenType.For) {
+      return this.parseForStatement();
+    }
+
+    // Phase 2: while loop
+    if (token.type === TokenType.While) {
+      return this.parseWhileStatement();
+    }
+
+    // Phase 2: return
+    if (token.type === TokenType.Return) {
+      return this.parseReturnStatement();
+    }
+
+    // Phase 2: break
+    if (token.type === TokenType.Break) {
+      this.advance();
+      return { kind: 'BreakStatement', loc: token.loc };
+    }
+
+    // Phase 2: continue
+    if (token.type === TokenType.Continue) {
+      this.advance();
+      return { kind: 'ContinueStatement', loc: token.loc };
+    }
+
+    // Phase 2: block statement  { ... }
+    if (token.type === TokenType.LBrace) {
+      return this.parseBlockStatement();
+    }
+
+    // Phase 2: function declaration — lookahead: IDENT ( ... ) :
+    if (token.type === TokenType.Identifier && this.isFunctionDeclaration()) {
+      return this.parseFunctionDeclaration();
+    }
+
     // TOON block: identifier[count]{fields}: or identifier{fields}:
     if (token.type === TokenType.Identifier && this.isToonHeader()) {
       return this.parseToonBlock();
@@ -172,7 +214,48 @@ export class Parser {
   // ===== Expression Parsing (Pratt-style precedence) =====
 
   parseExpression(): AST.Expression {
-    return this.parseComparison();
+    return this.parseTernary();
+  }
+
+  private parseTernary(): AST.Expression {
+    const left = this.parseLogicalOr();
+
+    // ternary: cond ? then : else
+    if (this.check(TokenType.Query)) {
+      const loc = left.loc;
+      this.advance(); // consume ?
+      const thenExpr = this.parseExpression();
+      this.expect(TokenType.Colon);
+      const elseExpr = this.parseExpression();
+      return { kind: 'IfExpression', condition: left, then: thenExpr, else: elseExpr, loc };
+    }
+
+    return left;
+  }
+
+  private parseLogicalOr(): AST.Expression {
+    let left = this.parseLogicalAnd();
+
+    while (this.check(TokenType.Or)) {
+      const op = this.advance().value;
+      const right = this.parseLogicalAnd();
+      left = { kind: 'BinaryExpression', op: '||', left, right, loc: left.loc };
+    }
+
+    return left;
+  }
+
+  private parseLogicalAnd(): AST.Expression {
+    let left = this.parseComparison();
+
+    // ∩ or && as logical AND in expression context
+    while (this.check(TokenType.Intersect)) {
+      this.advance();
+      const right = this.parseComparison();
+      left = { kind: 'BinaryExpression', op: '&&', left, right, loc: left.loc };
+    }
+
+    return left;
   }
 
   private parseComparison(): AST.Expression {
@@ -207,12 +290,28 @@ export class Parser {
   }
 
   private parseMultiplication(): AST.Expression {
+    let left = this.parsePower();
+
+    while (
+      this.check(TokenType.Star) ||
+      this.check(TokenType.Slash) ||
+      this.check(TokenType.Percent)
+    ) {
+      const op = this.advance().value;
+      const right = this.parsePower();
+      left = { kind: 'BinaryExpression', op, left, right, loc: left.loc };
+    }
+
+    return left;
+  }
+
+  private parsePower(): AST.Expression {
     let left = this.parseUnary();
 
-    while (this.check(TokenType.Star) || this.check(TokenType.Slash)) {
-      const op = this.advance().value;
-      const right = this.parseUnary();
-      left = { kind: 'BinaryExpression', op, left, right, loc: left.loc };
+    if (this.check(TokenType.Power)) {
+      this.advance();
+      const right = this.parsePower(); // right-associative
+      left = { kind: 'BinaryExpression', op: '**', left, right, loc: left.loc };
     }
 
     return left;
@@ -249,14 +348,18 @@ export class Parser {
       // Function call: expr(args)
       if (this.check(TokenType.LParen)) {
         this.advance();
+        this.skipNewlines();
         const args: AST.Expression[] = [];
         if (!this.check(TokenType.RParen)) {
           args.push(this.parseExpression());
           while (this.check(TokenType.Comma)) {
             this.advance();
+            this.skipNewlines();
+            if (this.check(TokenType.RParen)) break;
             args.push(this.parseExpression());
           }
         }
+        this.skipNewlines();
         this.expect(TokenType.RParen);
         expr = { kind: 'CallExpression', callee: expr, args, loc: expr.loc };
         continue;
@@ -291,6 +394,25 @@ export class Parser {
     if (token.type === TokenType.False) {
       this.advance();
       return { kind: 'BooleanLiteral', value: false, loc: token.loc };
+    }
+
+    // Null
+    if (token.type === TokenType.Null) {
+      this.advance();
+      return { kind: 'NullLiteral', loc: token.loc };
+    }
+
+    // Phase 2: anonymous function expression: (params): body
+    if (token.type === TokenType.LParen && this.isAnonFunction()) {
+      return this.parseFunctionExpression();
+    }
+
+    // Phase 2: if expression (ternary): cond ? then : else
+    // Handled at a higher precedence level — see parseTernary
+
+    // Phase 2: match expression
+    if (token.type === TokenType.Match) {
+      return this.parseMatchExpression();
     }
 
     // ∈(category)
@@ -334,16 +456,20 @@ export class Parser {
     const suffixToken = this.advance();
     const suffix = suffixToken.value as '?' | '!' | '@';
     this.expect(TokenType.LBracket);
+    this.skipNewlines();
 
     const args: AST.ShorthandArg[] = [];
     if (!this.check(TokenType.RBracket)) {
       args.push(this.parseShorthandArg());
       while (this.check(TokenType.Comma)) {
         this.advance();
+        this.skipNewlines();
+        if (this.check(TokenType.RBracket)) break; // trailing comma
         args.push(this.parseShorthandArg());
       }
     }
 
+    this.skipNewlines();
     this.expect(TokenType.RBracket);
     return { kind: 'ShorthandExpression', name, suffix, args, loc };
   }
@@ -382,6 +508,220 @@ export class Parser {
 
     this.expect(TokenType.RBracket);
     return { kind: 'ArrayLiteral', elements, loc };
+  }
+
+  // ===== Phase 2: Functions & Control Flow =====
+
+  private isFunctionDeclaration(): boolean {
+    // Lookahead: IDENT ( ... ) :
+    // Scan: pos=0 is IDENT, pos+1 should be LParen
+    let i = this.pos + 1;
+    if (i >= this.tokens.length || this.tokens[i].type !== TokenType.LParen) return false;
+    // Skip to matching RParen
+    let depth = 1;
+    i++;
+    while (i < this.tokens.length && depth > 0) {
+      const t = this.tokens[i];
+      if (t.type === TokenType.LParen) depth++;
+      if (t.type === TokenType.RParen) depth--;
+      if (t.type === TokenType.EOF || t.type === TokenType.Newline) break;
+      i++;
+    }
+    if (depth !== 0) return false;
+    // Next significant token must be Colon
+    if (i >= this.tokens.length) return false;
+    return this.tokens[i].type === TokenType.Colon;
+  }
+
+  private parseFunctionDeclaration(): AST.FunctionDeclaration {
+    const loc = this.current().loc;
+    const name = this.expectIdentifier();
+    this.expect(TokenType.LParen);
+    const params = this.parseParamList();
+    this.expect(TokenType.RParen);
+    this.expect(TokenType.Colon);
+
+    const body = this.parseFunctionBody();
+    return { kind: 'FunctionDeclaration', name, params, body, loc };
+  }
+
+  private parseFunctionBody(): AST.Expression | AST.Statement[] {
+    // Block body: { stmts }
+    if (this.check(TokenType.LBrace)) {
+      return this.parseBlock();
+    }
+    // Expression body
+    return this.parseExpression();
+  }
+
+  private parseParamList(): AST.Param[] {
+    const params: AST.Param[] = [];
+    if (this.check(TokenType.RParen)) return params;
+    params.push(this.parseParam());
+    while (this.check(TokenType.Comma)) {
+      this.advance();
+      if (this.check(TokenType.RParen)) break;
+      params.push(this.parseParam());
+    }
+    return params;
+  }
+
+  private parseBlock(): AST.Statement[] {
+    this.expect(TokenType.LBrace);
+    this.skipNewlines();
+    const stmts: AST.Statement[] = [];
+    while (!this.check(TokenType.RBrace) && !this.isAtEnd()) {
+      const stmt = this.parseStatement();
+      if (stmt) stmts.push(stmt);
+      this.skipNewlines();
+    }
+    this.expect(TokenType.RBrace);
+    return stmts;
+  }
+
+  private parseBlockStatement(): AST.BlockStatement {
+    const loc = this.current().loc;
+    const statements = this.parseBlock();
+    return { kind: 'BlockStatement', statements, loc };
+  }
+
+  private parseIfStatement(): AST.IfStatement {
+    const loc = this.current().loc;
+    this.advance(); // consume 'if'
+    const condition = this.parseExpression();
+    this.skipNewlines();
+    const then = this.parseBlock();
+    this.skipNewlines();
+
+    let elseBranch: AST.Statement[] | null = null;
+    if (this.check(TokenType.Else)) {
+      this.advance();
+      this.skipNewlines();
+      if (this.check(TokenType.If)) {
+        // else if — treat as a single-element block containing another if
+        elseBranch = [this.parseIfStatement()];
+      } else {
+        elseBranch = this.parseBlock();
+      }
+    }
+
+    return { kind: 'IfStatement', condition, then, else: elseBranch, loc };
+  }
+
+  private parseForStatement(): AST.ForStatement {
+    const loc = this.current().loc;
+    this.advance(); // consume 'for'
+    const variable = this.expectIdentifier();
+    this.expect(TokenType.In); // ∈
+    const iterable = this.parseExpression();
+    this.skipNewlines();
+    const body = this.parseBlock();
+    return { kind: 'ForStatement', variable, iterable, body, loc };
+  }
+
+  private parseWhileStatement(): AST.WhileStatement {
+    const loc = this.current().loc;
+    this.advance(); // consume 'while'
+    const condition = this.parseExpression();
+    this.skipNewlines();
+    const body = this.parseBlock();
+    return { kind: 'WhileStatement', condition, body, loc };
+  }
+
+  private parseReturnStatement(): AST.ReturnStatement {
+    const loc = this.current().loc;
+    this.advance(); // consume 'return'
+    // If next is newline or EOF, no value
+    if (this.check(TokenType.Newline) || this.check(TokenType.EOF) || this.check(TokenType.RBrace)) {
+      return { kind: 'ReturnStatement', value: null, loc };
+    }
+    const value = this.parseExpression();
+    return { kind: 'ReturnStatement', value, loc };
+  }
+
+  private isAnonFunction(): boolean {
+    // Look ahead past (params) for :
+    let i = this.pos + 1;
+    let depth = 1;
+    while (i < this.tokens.length && depth > 0) {
+      const t = this.tokens[i];
+      if (t.type === TokenType.LParen) depth++;
+      if (t.type === TokenType.RParen) depth--;
+      if (t.type === TokenType.EOF || t.type === TokenType.Newline) return false;
+      i++;
+    }
+    return i < this.tokens.length && this.tokens[i].type === TokenType.Colon;
+  }
+
+  private parseFunctionExpression(): AST.FunctionExpression {
+    const loc = this.current().loc;
+    this.expect(TokenType.LParen);
+    const params = this.parseParamList();
+    this.expect(TokenType.RParen);
+    this.expect(TokenType.Colon);
+    const body = this.parseFunctionBody();
+    return { kind: 'FunctionExpression', name: null, params, body, loc };
+  }
+
+  private parseMatchExpression(): AST.MatchExpression {
+    const loc = this.current().loc;
+    this.advance(); // consume 'match'
+    const subject = this.parseExpression();
+    this.skipNewlines();
+
+    const arms: AST.MatchArm[] = [];
+    while (this.check(TokenType.Pipe)) {
+      this.advance(); // consume |
+      const armLoc = this.current().loc;
+      const pattern = this.parseMatchPattern();
+      let guard: AST.Expression | null = null;
+      // Optional guard: if condition
+      if (this.check(TokenType.If)) {
+        this.advance();
+        guard = this.parseExpression();
+      }
+      this.expect(TokenType.Arrow); // →
+      const body = this.parseExpression();
+      arms.push({ kind: 'MatchArm', pattern, guard, body, loc: armLoc });
+      this.skipNewlines();
+    }
+
+    return { kind: 'MatchExpression', subject, arms, loc };
+  }
+
+  private parseMatchPattern(): AST.MatchPattern {
+    const token = this.current();
+
+    if (token.type === TokenType.Identifier && token.value === '_') {
+      this.advance();
+      return { kind: 'WildcardPattern', loc: token.loc };
+    }
+    if (token.type === TokenType.Number) {
+      this.advance();
+      return { kind: 'NumberLiteral', value: parseFloat(token.value), raw: token.value, loc: token.loc };
+    }
+    if (token.type === TokenType.String) {
+      this.advance();
+      return { kind: 'StringLiteral', value: token.value, loc: token.loc };
+    }
+    if (token.type === TokenType.True) {
+      this.advance();
+      return { kind: 'BooleanLiteral', value: true, loc: token.loc };
+    }
+    if (token.type === TokenType.False) {
+      this.advance();
+      return { kind: 'BooleanLiteral', value: false, loc: token.loc };
+    }
+    if (token.type === TokenType.Null) {
+      this.advance();
+      return { kind: 'NullLiteral', loc: token.loc };
+    }
+    if (token.type === TokenType.Identifier) {
+      this.advance();
+      return { kind: 'Identifier', name: token.value, loc: token.loc };
+    }
+
+    throw unexpectedToken(token, 'pattern', this.source);
   }
 
   // ===== TOON Block Parsing =====
