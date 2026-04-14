@@ -60,6 +60,9 @@ export type {
   BreakStatement,
   ContinueStatement,
   BlockStatement,
+  // Phase 4
+  UseStatement,
+  PubStatement,
 } from './ast/index.js';
 
 export { walk, type Visitor } from './ast/index.js';

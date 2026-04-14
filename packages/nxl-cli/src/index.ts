@@ -4,6 +4,9 @@ import { compileCommand } from './commands/compile.js';
 import { replCommand } from './commands/repl.js';
 import { tokensCommand } from './commands/tokens.js';
 import { runCommand } from './commands/run.js';
+import { fmtCommand } from './commands/fmt.js';
+import { lintCommand } from './commands/lint.js';
+import { checkCommand } from './commands/check.js';
 
 const program = new Command();
 
@@ -36,5 +39,26 @@ program
   .description('Analyze token efficiency of a file')
   .option('--compare <original>', 'Compare against original file')
   .action(tokensCommand);
+
+program
+  .command('fmt <file>')
+  .description('Format an NXL file (prints to stdout by default)')
+  .option('-w, --write', 'Overwrite the file in place')
+  .option('--check', 'Exit with error if file would change (CI mode)')
+  .option('--indent <n>', 'Spaces per indent level (default 2)')
+  .action(fmtCommand);
+
+program
+  .command('lint <file>')
+  .description('Lint an NXL file for common issues')
+  .option('--rule <rule...>', 'Only report specific rules (e.g. no-undef)')
+  .option('--no-warn', 'Only report errors, suppress warnings')
+  .action(lintCommand);
+
+program
+  .command('check <file>')
+  .description('Type-check an NXL file (gradual — only errors when types are known)')
+  .option('--strict', 'Include warnings in addition to errors')
+  .action(checkCommand);
 
 program.parse();

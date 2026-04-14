@@ -30,6 +30,16 @@ export class Parser {
   private parseStatement(): AST.Statement | null {
     const token = this.current();
 
+    // Phase 4: use statement — use "./path"
+    if (token.type === TokenType.Use) {
+      return this.parseUseStatement();
+    }
+
+    // Phase 4: pub statement — pub name = expr  |  pub fn(params): body
+    if (token.type === TokenType.Pub) {
+      return this.parsePubStatement();
+    }
+
     // Phase 2: if statement
     if (token.type === TokenType.If) {
       return this.parseIfStatement();
@@ -337,10 +347,16 @@ export class Parser {
     let expr = this.parsePrimary();
 
     while (true) {
-      // Member access: expr.property
+      // Member access: expr.property  OR  expr.0 (numeric list index)
       if (this.check(TokenType.Dot)) {
         this.advance();
-        const property = this.expectIdentifier();
+        let property: string;
+        if (this.current().type === TokenType.Number) {
+          property = this.current().value;
+          this.advance();
+        } else {
+          property = this.expectIdentifier();
+        }
         expr = { kind: 'MemberExpression', object: expr, property, loc: expr.loc };
         continue;
       }
@@ -583,6 +599,42 @@ export class Parser {
     const loc = this.current().loc;
     const statements = this.parseBlock();
     return { kind: 'BlockStatement', statements, loc };
+  }
+
+  // ===== Phase 4: Module System =====
+
+  private parseUseStatement(): AST.UseStatement {
+    const loc = this.current().loc;
+    this.advance(); // consume 'use'
+    const pathToken = this.current();
+    if (pathToken.type !== TokenType.String) {
+      throw new ParseError(`Expected a string path after 'use', got '${pathToken.value}'`, pathToken.loc, this.source);
+    }
+    const path = pathToken.value;
+    this.advance();
+    return { kind: 'UseStatement', path, loc };
+  }
+
+  private parsePubStatement(): AST.PubStatement {
+    const loc = this.current().loc;
+    this.advance(); // consume 'pub'
+
+    // pub fn_name(params): body  → function declaration
+    if (this.current().type === TokenType.Identifier && this.isFunctionDeclaration()) {
+      const inner = this.parseFunctionDeclaration();
+      return { kind: 'PubStatement', inner, loc };
+    }
+
+    // pub name = expr  → assignment
+    if (this.current().type === TokenType.Identifier && this.peekAt(1)?.type === TokenType.Assign) {
+      const name = this.expectIdentifier();
+      this.advance(); // consume =
+      const value = this.parseExpression();
+      const inner: AST.AssignmentStatement = { kind: 'AssignmentStatement', name, value, loc: this.current().loc };
+      return { kind: 'PubStatement', inner, loc };
+    }
+
+    throw new ParseError(`'pub' must be followed by a name = expr or function declaration`, this.current().loc, this.source);
   }
 
   private parseIfStatement(): AST.IfStatement {

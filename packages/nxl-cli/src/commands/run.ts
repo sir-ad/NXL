@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { parse } from '@nxl/core';
 import { Interpreter, RuntimeError, display } from '@nxl/interpreter';
 import { createRuntime } from '@nxl/runtime';
@@ -32,6 +33,9 @@ export async function runCommand(file: string, opts: RunOpts): Promise<void> {
   const interp = opts.agent
     ? createRuntime().interp
     : new Interpreter();
+
+  // Set the current file path so use() can resolve relative imports
+  interp.currentFilePath = resolve(file);
 
   try {
     const result = await interp.run(program, source);

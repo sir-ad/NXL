@@ -31,7 +31,11 @@ import type {
   FunctionExpression,
   IfExpression,
   MatchExpression,
+  // Phase 4
+  UseStatement,
+  PubStatement,
 } from '@nxl/core';
+import { parse } from '@nxl/core';
 
 import {
   mkNumber, mkString, mkBool, mkList, mkDict, mkDictFromObj, mkNative,
@@ -95,6 +99,9 @@ export class Interpreter {
       case 'BreakStatement': throw new BreakSignal();
       case 'ContinueStatement': throw new ContinueSignal();
       case 'BlockStatement': return this.execBlock(stmt.statements, env);
+      // Phase 4
+      case 'UseStatement': return this.execUseStatement(stmt, env);
+      case 'PubStatement': return this.execPubStatement(stmt, env);
     }
   }
 
@@ -584,6 +591,79 @@ export class Interpreter {
       this.source
     );
   }
+
+  // ===== Phase 4: Module System =====
+
+  /**
+   * Module exports are stored in a special __pub__ dict on the environment.
+   * We keep a module cache keyed by resolved absolute path to avoid re-executing.
+   */
+  private moduleCache: Map<string, Map<string, Value>> = new Map();
+
+  private async execUseStatement(stmt: UseStatement, env: Environment): Promise<Value> {
+    const { resolve, dirname } = await import('node:path');
+    const { readFileSync } = await import('node:fs');
+
+    // Resolve path relative to the current file (stored in source field as a path when available)
+    const basePath = this.currentFilePath ?? process.cwd();
+    const absPath = resolve(dirname(basePath), stmt.path.endsWith('.nxl') ? stmt.path : stmt.path + '.nxl');
+
+    let exports: Map<string, Value>;
+
+    if (this.moduleCache.has(absPath)) {
+      exports = this.moduleCache.get(absPath)!;
+    } else {
+      // Read and execute the module in a fresh environment
+      let source: string;
+      try {
+        source = readFileSync(absPath, 'utf8');
+      } catch {
+        throw new RuntimeError(`use: cannot read module '${stmt.path}' (resolved: ${absPath})`, stmt.loc, this.source);
+      }
+
+      const program = parse(source);
+      const moduleEnv = new Environment();
+      registerBuiltins(moduleEnv);
+      // Share the same shorthand registry so modules can also use mem/tool/llm
+      const moduleInterp = new Interpreter(this.shorthand);
+      await moduleInterp.runInEnv(program, moduleEnv, source);
+
+      // Collect pub bindings
+      exports = moduleInterp.pubExports;
+      this.moduleCache.set(absPath, exports);
+    }
+
+    // Import all exported names into current env
+    for (const [name, val] of exports) {
+      env.define(name, val);
+    }
+
+    return NULL;
+  }
+
+  /** Tracks pub-exported bindings for this interpreter instance */
+  readonly pubExports: Map<string, Value> = new Map();
+
+  private async execPubStatement(stmt: PubStatement, env: Environment): Promise<Value> {
+    const result = await this.execStatement(stmt.inner, env);
+
+    // Determine the exported name
+    let name: string;
+    if (stmt.inner.kind === 'AssignmentStatement') {
+      name = stmt.inner.name;
+    } else {
+      name = stmt.inner.name;
+    }
+
+    // After executing, read the value back from the environment
+    const val = env.get(name);
+    this.pubExports.set(name, val);
+
+    return result;
+  }
+
+  /** The file path of the currently executing script (for relative use imports) */
+  currentFilePath: string | null = null;
 
   private async evalMember(expr: MemberExpression, env: Environment): Promise<Value> {
     const obj = await this.evalExpr(expr.object, env);

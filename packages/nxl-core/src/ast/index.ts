@@ -45,6 +45,9 @@ export type {
   BreakStatement,
   ContinueStatement,
   BlockStatement,
+  // Phase 4
+  UseStatement,
+  PubStatement,
 } from './nodes.js';
 
 export { walk, type Visitor } from './visitor.js';

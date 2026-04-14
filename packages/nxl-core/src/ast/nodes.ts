@@ -31,7 +31,10 @@ export type Statement =
   | ReturnStatement
   | BreakStatement
   | ContinueStatement
-  | BlockStatement;
+  | BlockStatement
+  // Phase 4 – modules
+  | UseStatement
+  | PubStatement;
 
 export interface PipelineStatement extends NodeBase {
   kind: 'PipelineStatement';
@@ -298,6 +301,20 @@ export interface BlockStatement extends NodeBase {
   statements: Statement[];
 }
 
+// ===== Phase 4: Module System =====
+
+/** use "./path/to/module" */
+export interface UseStatement extends NodeBase {
+  kind: 'UseStatement';
+  path: string;
+}
+
+/** pub x = expr  OR  pub fn(params): body */
+export interface PubStatement extends NodeBase {
+  kind: 'PubStatement';
+  inner: AssignmentStatement | FunctionDeclaration;
+}
+
 // ===== Node type union =====
 
 export type Node =
@@ -313,4 +330,6 @@ export type Node =
   | Param
   | TypeExpr
   | ShorthandArg
-  | MatchArm;
+  | MatchArm
+  | UseStatement
+  | PubStatement;

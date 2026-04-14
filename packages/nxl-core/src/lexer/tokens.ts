@@ -20,6 +20,8 @@ export enum TokenType {
   Break,          // break
   Continue,       // continue
   Null,           // null
+  Use,            // use
+  Pub,            // pub
 
   // Operators
   Plus,           // +
@@ -91,6 +93,8 @@ export const KEYWORDS: Record<string, TokenType> = {
   break: TokenType.Break,
   continue: TokenType.Continue,
   null: TokenType.Null,
+  use: TokenType.Use,
+  pub: TokenType.Pub,
 };
 
 // Maps Unicode MetaGlyph symbols to their token types
@@ -123,6 +127,8 @@ export const TOKEN_NAMES: Record<TokenType, string> = {
   [TokenType.Break]: 'break',
   [TokenType.Continue]: 'continue',
   [TokenType.Null]: 'null',
+  [TokenType.Use]: 'use',
+  [TokenType.Pub]: 'pub',
   [TokenType.Plus]: '+',
   [TokenType.Minus]: '-',
   [TokenType.Star]: '*',

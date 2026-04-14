@@ -450,7 +450,498 @@ const BUILTINS: NativeValue[] = [
     return NULL;
   }),
 
-  // JSON
+  // ===== File I/O =====
+
+  mkNative('read_file', (args) => {
+    assertArity('read_file', args, 1);
+    assertKind('read_file', args[0], 'string');
+    try {
+      const { readFileSync } = require('node:fs') as typeof import('node:fs');
+      return mkString(readFileSync(args[0].value, 'utf8'));
+    } catch (e: unknown) {
+      throw new RuntimeError(`read_file(): cannot read '${args[0].value}': ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  mkNative('write_file', (args) => {
+    assertArity('write_file', args, 2);
+    assertKind('write_file', args[0], 'string');
+    assertKind('write_file', args[1], 'string');
+    try {
+      const { writeFileSync } = require('node:fs') as typeof import('node:fs');
+      writeFileSync(args[0].value, args[1].value, 'utf8');
+      return NULL;
+    } catch (e: unknown) {
+      throw new RuntimeError(`write_file(): cannot write '${args[0].value}': ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  mkNative('file_exists', (args) => {
+    assertArity('file_exists', args, 1);
+    assertKind('file_exists', args[0], 'string');
+    const { existsSync } = require('node:fs') as typeof import('node:fs');
+    return mkBool(existsSync(args[0].value));
+  }),
+
+  mkNative('list_dir', (args) => {
+    assertArity('list_dir', args, 1);
+    assertKind('list_dir', args[0], 'string');
+    try {
+      const { readdirSync } = require('node:fs') as typeof import('node:fs');
+      return mkList(readdirSync(args[0].value).map(f => mkString(String(f))));
+    } catch (e: unknown) {
+      throw new RuntimeError(`list_dir(): cannot list '${args[0].value}': ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  mkNative('make_dir', (args) => {
+    assertArity('make_dir', args, 1);
+    assertKind('make_dir', args[0], 'string');
+    try {
+      const { mkdirSync } = require('node:fs') as typeof import('node:fs');
+      mkdirSync(args[0].value, { recursive: true });
+      return NULL;
+    } catch (e: unknown) {
+      throw new RuntimeError(`make_dir(): cannot create '${args[0].value}': ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  // ===== Path =====
+
+  mkNative('path_join', (args) => {
+    if (args.length === 0) throw new RuntimeError('path_join() expects at least one argument');
+    const { join } = require('node:path') as typeof import('node:path');
+    const parts = args.map((a, i) => {
+      if (a.kind !== 'string') throw new TypeError(`path_join(): argument ${i + 1} must be a string, got ${a.kind}`);
+      return a.value;
+    });
+    return mkString(join(...parts));
+  }),
+
+  mkNative('path_basename', (args) => {
+    assertArity('path_basename', args, 1);
+    assertKind('path_basename', args[0], 'string');
+    const { basename } = require('node:path') as typeof import('node:path');
+    return mkString(basename(args[0].value));
+  }),
+
+  mkNative('path_dirname', (args) => {
+    assertArity('path_dirname', args, 1);
+    assertKind('path_dirname', args[0], 'string');
+    const { dirname } = require('node:path') as typeof import('node:path');
+    return mkString(dirname(args[0].value));
+  }),
+
+  mkNative('path_abs', (args) => {
+    assertArity('path_abs', args, 1);
+    assertKind('path_abs', args[0], 'string');
+    const { resolve } = require('node:path') as typeof import('node:path');
+    return mkString(resolve(args[0].value));
+  }),
+
+  mkNative('path_ext', (args) => {
+    assertArity('path_ext', args, 1);
+    assertKind('path_ext', args[0], 'string');
+    const { extname } = require('node:path') as typeof import('node:path');
+    return mkString(extname(args[0].value));
+  }),
+
+  // ===== Regex =====
+
+  mkNative('regex_test', (args) => {
+    assertArity('regex_test', args, 2);
+    assertKind('regex_test', args[0], 'string');
+    assertKind('regex_test', args[1], 'string');
+    try {
+      return mkBool(new RegExp(args[0].value).test(args[1].value));
+    } catch (e: unknown) {
+      throw new RuntimeError(`regex_test(): invalid pattern: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  mkNative('regex_find', (args) => {
+    assertArity('regex_find', args, 2);
+    assertKind('regex_find', args[0], 'string');
+    assertKind('regex_find', args[1], 'string');
+    try {
+      const matches = [...args[1].value.matchAll(new RegExp(args[0].value, 'g'))];
+      return mkList(matches.map(m => mkString(m[0])));
+    } catch (e: unknown) {
+      throw new RuntimeError(`regex_find(): invalid pattern: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  mkNative('regex_replace', (args) => {
+    assertArity('regex_replace', args, 3);
+    assertKind('regex_replace', args[0], 'string');
+    assertKind('regex_replace', args[1], 'string');
+    assertKind('regex_replace', args[2], 'string');
+    try {
+      return mkString(args[2].value.replace(new RegExp(args[0].value, 'g'), args[1].value));
+    } catch (e: unknown) {
+      throw new RuntimeError(`regex_replace(): invalid pattern: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  mkNative('regex_groups', (args) => {
+    assertArity('regex_groups', args, 2);
+    assertKind('regex_groups', args[0], 'string');
+    assertKind('regex_groups', args[1], 'string');
+    try {
+      const m = args[1].value.match(new RegExp(args[0].value));
+      if (!m) return NULL;
+      return mkList(m.slice(1).map(g => g == null ? NULL : mkString(g)));
+    } catch (e: unknown) {
+      throw new RuntimeError(`regex_groups(): invalid pattern: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  // ===== Time =====
+
+  mkNative('now', (args) => {
+    assertArity('now', args, 0);
+    return mkNumber(Date.now() / 1000);
+  }),
+
+  mkNative('timestamp', (args) => {
+    assertArity('timestamp', args, 0);
+    return mkNumber(Date.now());
+  }),
+
+  mkNative('sleep', async (args) => {
+    assertArity('sleep', args, 1);
+    assertKind('sleep', args[0], 'number');
+    await new Promise(resolve => setTimeout(resolve, args[0].value * 1000));
+    return NULL;
+  }),
+
+  // ===== Random =====
+
+  mkNative('random', (args) => {
+    assertArity('random', args, 0);
+    return mkNumber(Math.random());
+  }),
+
+  mkNative('random_int', (args) => {
+    assertArity('random_int', args, 2);
+    assertKind('random_int', args[0], 'number');
+    assertKind('random_int', args[1], 'number');
+    const lo = Math.ceil(args[0].value);
+    const hi = Math.floor(args[1].value);
+    if (lo > hi) throw new RuntimeError('random_int(): min must be <= max');
+    return mkNumber(Math.floor(Math.random() * (hi - lo + 1)) + lo);
+  }),
+
+  mkNative('random_choice', (args) => {
+    assertArity('random_choice', args, 1);
+    assertKind('random_choice', args[0], 'list');
+    if (args[0].items.length === 0) throw new RuntimeError('random_choice(): empty list');
+    return args[0].items[Math.floor(Math.random() * args[0].items.length)];
+  }),
+
+  // ===== Environment =====
+
+  mkNative('env_get', (args) => {
+    assertArity('env_get', args, 1, 2);
+    assertKind('env_get', args[0], 'string');
+    const val = process.env[args[0].value];
+    if (val === undefined) return args[1] ?? NULL;
+    return mkString(val);
+  }),
+
+  mkNative('env_set', (args) => {
+    assertArity('env_set', args, 2);
+    assertKind('env_set', args[0], 'string');
+    assertKind('env_set', args[1], 'string');
+    process.env[args[0].value] = args[1].value;
+    return NULL;
+  }),
+
+  mkNative('env_keys', (args) => {
+    assertArity('env_keys', args, 0);
+    return mkList(Object.keys(process.env).map(mkString));
+  }),
+
+  // ===== HTTP =====
+
+  mkNative('fetch_url', async (args) => {
+    assertArity('fetch_url', args, 1, 2);
+    assertKind('fetch_url', args[0], 'string');
+    const url = args[0].value;
+    const opts = args[1]?.kind === 'dict' ? args[1].entries : new Map<string, Value>();
+
+    const methodVal = opts.get('method');
+    const method = methodVal?.kind === 'string' ? methodVal.value : 'GET';
+
+    const bodyVal = opts.get('body');
+    const body = bodyVal?.kind === 'string' ? bodyVal.value : undefined;
+
+    const headersMap: Record<string, string> = {};
+    const headersVal = opts.get('headers');
+    if (headersVal?.kind === 'dict') {
+      for (const [k, v] of headersVal.entries) {
+        if (v.kind === 'string') headersMap[k] = v.value;
+      }
+    }
+
+    try {
+      const res = await fetch(url, { method, body, headers: headersMap });
+      const text = await res.text();
+      return mkDict(new Map<string, Value>([
+        ['status', mkNumber(res.status)],
+        ['ok', mkBool(res.ok)],
+        ['text', mkString(text)],
+        ['headers', mkDict(new Map<string, Value>(
+          [...res.headers.entries()].map(([k, v]) => [k, mkString(v)])
+        ))],
+      ]));
+    } catch (e: unknown) {
+      throw new RuntimeError(`fetch_url(): request failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }),
+
+  // ===== String extras =====
+
+  mkNative('pad_start', (args) => {
+    assertArity('pad_start', args, 2, 3);
+    assertKind('pad_start', args[0], 'string');
+    assertKind('pad_start', args[1], 'number');
+    const pad = args[2]?.kind === 'string' ? args[2].value : ' ';
+    return mkString(args[0].value.padStart(args[1].value, pad));
+  }),
+
+  mkNative('pad_end', (args) => {
+    assertArity('pad_end', args, 2, 3);
+    assertKind('pad_end', args[0], 'string');
+    assertKind('pad_end', args[1], 'number');
+    const pad = args[2]?.kind === 'string' ? args[2].value : ' ';
+    return mkString(args[0].value.padEnd(args[1].value, pad));
+  }),
+
+  mkNative('char_code', (args) => {
+    assertArity('char_code', args, 1);
+    assertKind('char_code', args[0], 'string');
+    if (args[0].value.length === 0) throw new RuntimeError('char_code(): empty string');
+    return mkNumber(args[0].value.charCodeAt(0));
+  }),
+
+  mkNative('from_char_code', (args) => {
+    assertArity('from_char_code', args, 1);
+    assertKind('from_char_code', args[0], 'number');
+    return mkString(String.fromCharCode(args[0].value));
+  }),
+
+  mkNative('repeat', (args) => {
+    assertArity('repeat', args, 2);
+    assertKind('repeat', args[0], 'string');
+    assertKind('repeat', args[1], 'number');
+    if (args[1].value < 0) throw new RuntimeError('repeat(): count must be >= 0');
+    return mkString(args[0].value.repeat(args[1].value));
+  }),
+
+  mkNative('index_of', (args) => {
+    assertArity('index_of', args, 2);
+    if (args[0].kind === 'string') {
+      assertKind('index_of', args[1], 'string');
+      return mkNumber(args[0].value.indexOf(args[1].value));
+    }
+    if (args[0].kind === 'list') {
+      const idx = args[0].items.findIndex(item => {
+        if (item.kind !== args[1].kind) return false;
+        if (item.kind === 'number') return item.value === (args[1] as { kind: 'number'; value: number }).value;
+        if (item.kind === 'string') return item.value === (args[1] as { kind: 'string'; value: string }).value;
+        return false;
+      });
+      return mkNumber(idx);
+    }
+    throw new TypeError('index_of(): expected string or list');
+  }),
+
+  // ===== Math extras =====
+
+  mkNative('pow', (args) => {
+    assertArity('pow', args, 2);
+    assertKind('pow', args[0], 'number');
+    assertKind('pow', args[1], 'number');
+    return mkNumber(Math.pow(args[0].value, args[1].value));
+  }),
+
+  mkNative('log', (args) => {
+    assertArity('log', args, 1, 2);
+    assertKind('log', args[0], 'number');
+    if (args[1]) {
+      assertKind('log', args[1], 'number');
+      return mkNumber(Math.log(args[0].value) / Math.log(args[1].value));
+    }
+    return mkNumber(Math.log(args[0].value));
+  }),
+
+  mkNative('sin', (args) => { assertArity('sin', args, 1); assertKind('sin', args[0], 'number'); return mkNumber(Math.sin(args[0].value)); }),
+  mkNative('cos', (args) => { assertArity('cos', args, 1); assertKind('cos', args[0], 'number'); return mkNumber(Math.cos(args[0].value)); }),
+  mkNative('tan', (args) => { assertArity('tan', args, 1); assertKind('tan', args[0], 'number'); return mkNumber(Math.tan(args[0].value)); }),
+
+  mkNative('clamp', (args) => {
+    assertArity('clamp', args, 3);
+    assertKind('clamp', args[0], 'number');
+    assertKind('clamp', args[1], 'number');
+    assertKind('clamp', args[2], 'number');
+    return mkNumber(Math.min(Math.max(args[0].value, args[1].value), args[2].value));
+  }),
+
+  mkNative('sign', (args) => {
+    assertArity('sign', args, 1);
+    assertKind('sign', args[0], 'number');
+    return mkNumber(Math.sign(args[0].value));
+  }),
+
+  // ===== List extras =====
+
+  mkNative('flat', (args) => {
+    assertArity('flat', args, 1);
+    assertKind('flat', args[0], 'list');
+    const result: Value[] = [];
+    for (const item of args[0].items) {
+      if (item.kind === 'list') result.push(...item.items);
+      else result.push(item);
+    }
+    return mkList(result);
+  }),
+
+  mkNative('zip', (args) => {
+    if (args.length < 2) throw new RuntimeError('zip() expects at least 2 arguments');
+    for (const a of args) assertKind('zip', a, 'list');
+    const minLen = Math.min(...args.map(a => (a as { kind: 'list'; items: Value[] }).items.length));
+    const result: Value[] = [];
+    for (let i = 0; i < minLen; i++) {
+      result.push(mkList(args.map(a => (a as { kind: 'list'; items: Value[] }).items[i])));
+    }
+    return mkList(result);
+  }),
+
+  mkNative('unique', (args) => {
+    assertArity('unique', args, 1);
+    assertKind('unique', args[0], 'list');
+    const seen: Value[] = [];
+    const result: Value[] = [];
+    for (const item of args[0].items) {
+      if (!seen.some(s => {
+        if (s.kind !== item.kind) return false;
+        if (s.kind === 'number') return s.value === (item as { kind: 'number'; value: number }).value;
+        if (s.kind === 'string') return s.value === (item as { kind: 'string'; value: string }).value;
+        if (s.kind === 'bool') return s.value === (item as { kind: 'bool'; value: boolean }).value;
+        if (s.kind === 'null') return true;
+        return false;
+      })) {
+        seen.push(item);
+        result.push(item);
+      }
+    }
+    return mkList(result);
+  }),
+
+  mkNative('group_by', (args) => {
+    assertArity('group_by', args, 2);
+    assertKind('group_by', args[0], 'list');
+    assertKind('group_by', args[1], 'string');
+    const key = args[1].value;
+    const groups = new Map<string, Value[]>();
+    for (const item of args[0].items) {
+      if (item.kind !== 'dict') throw new TypeError('group_by(): list items must be dicts');
+      const k = item.entries.get(key);
+      const ks = k ? display(k) : 'null';
+      if (!groups.has(ks)) groups.set(ks, []);
+      groups.get(ks)!.push(item);
+    }
+    return mkDict(new Map([...groups.entries()].map(([k, v]) => [k, mkList(v)])));
+  }),
+
+  mkNative('count', (args) => {
+    assertArity('count', args, 1);
+    if (args[0].kind === 'list') return mkNumber(args[0].items.length);
+    if (args[0].kind === 'dict') return mkNumber(args[0].entries.size);
+    if (args[0].kind === 'string') return mkNumber(args[0].value.length);
+    throw new TypeError('count(): expected list, dict, or string');
+  }),
+
+  mkNative('first', (args) => {
+    assertArity('first', args, 1);
+    assertKind('first', args[0], 'list');
+    return args[0].items[0] ?? NULL;
+  }),
+
+  mkNative('last', (args) => {
+    assertArity('last', args, 1);
+    assertKind('last', args[0], 'list');
+    return args[0].items[args[0].items.length - 1] ?? NULL;
+  }),
+
+  mkNative('take', (args) => {
+    assertArity('take', args, 2);
+    assertKind('take', args[0], 'list');
+    assertKind('take', args[1], 'number');
+    return mkList(args[0].items.slice(0, args[1].value));
+  }),
+
+  mkNative('drop', (args) => {
+    assertArity('drop', args, 2);
+    assertKind('drop', args[0], 'list');
+    assertKind('drop', args[1], 'number');
+    return mkList(args[0].items.slice(args[1].value));
+  }),
+
+  mkNative('any', (args) => {
+    assertArity('any', args, 1);
+    assertKind('any', args[0], 'list');
+    return mkBool(args[0].items.some(v => v.kind !== 'null' && !(v.kind === 'bool' && !v.value)));
+  }),
+
+  mkNative('all', (args) => {
+    assertArity('all', args, 1);
+    assertKind('all', args[0], 'list');
+    return mkBool(args[0].items.every(v => v.kind !== 'null' && !(v.kind === 'bool' && !v.value)));
+  }),
+
+  mkNative('none', (args) => {
+    assertArity('none', args, 1);
+    assertKind('none', args[0], 'list');
+    return mkBool(!args[0].items.some(v => v.kind !== 'null' && !(v.kind === 'bool' && !v.value)));
+  }),
+
+  // ===== Dict extras =====
+
+  mkNative('merge', (args) => {
+    if (args.length < 2) throw new RuntimeError('merge() expects at least 2 arguments');
+    const result = new Map<string, Value>();
+    for (const a of args) {
+      assertKind('merge', a, 'dict');
+      for (const [k, v] of a.entries) result.set(k, v);
+    }
+    return mkDict(result);
+  }),
+
+  mkNative('omit', (args) => {
+    assertArity('omit', args, 2);
+    assertKind('omit', args[0], 'dict');
+    assertKind('omit', args[1], 'list');
+    const keys = new Set(args[1].items.map(k => {
+      if (k.kind !== 'string') throw new TypeError('omit(): key list must contain strings');
+      return k.value;
+    }));
+    return mkDict(new Map([...args[0].entries].filter(([k]) => !keys.has(k))));
+  }),
+
+  mkNative('pick', (args) => {
+    assertArity('pick', args, 2);
+    assertKind('pick', args[0], 'dict');
+    assertKind('pick', args[1], 'list');
+    const keys = new Set(args[1].items.map(k => {
+      if (k.kind !== 'string') throw new TypeError('pick(): key list must contain strings');
+      return k.value;
+    }));
+    return mkDict(new Map([...args[0].entries].filter(([k]) => keys.has(k))));
+  }),
+
+  // ===== JSON
   mkNative('json_encode', (args) => {
     assertArity('json_encode', args, 1);
     function toJS(v: Value): unknown {

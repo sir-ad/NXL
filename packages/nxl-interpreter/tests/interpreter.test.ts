@@ -201,6 +201,213 @@ x
   });
 });
 
+// ===== Phase 5: Extended stdlib =====
+
+describe('stdlib: file I/O', () => {
+  it('file_exists returns bool', async () => {
+    const v = await val('file_exists("/tmp")');
+    expect(v).toMatchObject({ kind: 'bool', value: true });
+  });
+
+  it('write_file and read_file round-trip', async () => {
+    const src = `
+write_file("/tmp/nxl_test_io.txt", "hello from nxl")
+read_file("/tmp/nxl_test_io.txt")
+`;
+    expect(await run(src)).toBe('hello from nxl');
+  });
+
+  it('read_file throws on missing file', async () => {
+    await expect(interpret('read_file("/tmp/__no_such_file_nxl__.txt")')).rejects.toThrow('read_file');
+  });
+});
+
+describe('stdlib: regex', () => {
+  it('regex_test', async () => {
+    expect(await run('regex_test("^hello", "hello world")')).toBe('true');
+    expect(await run('regex_test("^world", "hello world")')).toBe('false');
+  });
+
+  it('regex_find', async () => {
+    const v = await val('regex_find("\\\\d+", "abc 123 def 456")');
+    expect(v.kind).toBe('list');
+    if (v.kind === 'list') expect(v.items).toHaveLength(2);
+  });
+
+  it('regex_replace', async () => {
+    expect(await run('regex_replace("\\\\d+", "N", "foo 1 bar 2")')).toBe('foo N bar N');
+  });
+
+  it('regex_groups', async () => {
+    const v = await val('regex_groups("(\\\\w+)@(\\\\w+)", "user@host")');
+    expect(v.kind).toBe('list');
+    if (v.kind === 'list') {
+      expect(display(v.items[0])).toBe('user');
+      expect(display(v.items[1])).toBe('host');
+    }
+  });
+});
+
+describe('stdlib: time + random', () => {
+  it('now() returns a number > 0', async () => {
+    const v = await val('now()');
+    expect(v.kind).toBe('number');
+    if (v.kind === 'number') expect(v.value).toBeGreaterThan(0);
+  });
+
+  it('random() returns 0..1', async () => {
+    const v = await val('random()');
+    expect(v.kind).toBe('number');
+    if (v.kind === 'number') {
+      expect(v.value).toBeGreaterThanOrEqual(0);
+      expect(v.value).toBeLessThan(1);
+    }
+  });
+
+  it('random_int(1, 10) stays in range', async () => {
+    const v = await val('random_int(1, 10)');
+    expect(v.kind).toBe('number');
+    if (v.kind === 'number') {
+      expect(v.value).toBeGreaterThanOrEqual(1);
+      expect(v.value).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('random_choice picks from list', async () => {
+    const v = await val('random_choice([10, 20, 30])');
+    expect(v.kind).toBe('number');
+    if (v.kind === 'number') {
+      expect([10, 20, 30]).toContain(v.value);
+    }
+  });
+});
+
+describe('stdlib: path', () => {
+  it('path_basename', async () => {
+    expect(await run('path_basename("/foo/bar/baz.nxl")')).toBe('baz.nxl');
+  });
+
+  it('path_dirname', async () => {
+    expect(await run('path_dirname("/foo/bar/baz.nxl")')).toBe('/foo/bar');
+  });
+
+  it('path_ext', async () => {
+    expect(await run('path_ext("script.nxl")')).toBe('.nxl');
+  });
+
+  it('path_join', async () => {
+    expect(await run('path_join("/tmp", "nxl", "test.nxl")')).toBe('/tmp/nxl/test.nxl');
+  });
+});
+
+describe('stdlib: collections', () => {
+  it('flat flattens one level', async () => {
+    const v = await val('flat([[1,2],[3,4]])');
+    expect(v).toMatchObject({ kind: 'list' });
+    if (v.kind === 'list') expect(v.items).toHaveLength(4);
+  });
+
+  it('zip pairs lists', async () => {
+    const v = await val('zip([1,2,3], ["a","b","c"])');
+    expect(v.kind).toBe('list');
+    if (v.kind === 'list') expect(v.items).toHaveLength(3);
+  });
+
+  it('unique deduplicates', async () => {
+    const v = await val('unique([1, 2, 2, 3, 1])');
+    expect(v.kind).toBe('list');
+    if (v.kind === 'list') expect(v.items).toHaveLength(3);
+  });
+
+  it('first and last', async () => {
+    expect(await run('first([10, 20, 30])')).toBe('10');
+    expect(await run('last([10, 20, 30])')).toBe('30');
+  });
+
+  it('take and drop', async () => {
+    expect(await run('take([1,2,3,4,5], 3)')).toBe('[1, 2, 3]');
+    expect(await run('drop([1,2,3,4,5], 2)')).toBe('[3, 4, 5]');
+  });
+
+  it('any / all / none', async () => {
+    expect(await run('any([false, false, true])')).toBe('true');
+    expect(await run('all([true, true, true])')).toBe('true');
+    expect(await run('none([false, false, false])')).toBe('true');
+  });
+
+  it('merge dicts', async () => {
+    const v = await val(`
+a = json_decode('{"x":1}')
+b = json_decode('{"y":2}')
+merge(a, b)
+`);
+    expect(v.kind).toBe('dict');
+    if (v.kind === 'dict') {
+      expect(v.entries.has('x')).toBe(true);
+      expect(v.entries.has('y')).toBe(true);
+    }
+  });
+});
+
+describe('stdlib: string extras', () => {
+  it('pad_start', async () => {
+    expect(await run('pad_start("7", 3, "0")')).toBe('007');
+  });
+
+  it('pad_end', async () => {
+    expect(await run('pad_end("hi", 5, ".")')).toBe('hi...');
+  });
+
+  it('repeat', async () => {
+    expect(await run('repeat("ab", 3)')).toBe('ababab');
+  });
+
+  it('index_of string', async () => {
+    expect(await run('index_of("hello world", "world")')).toBe('6');
+  });
+
+  it('char_code and from_char_code', async () => {
+    expect(await run('char_code("A")')).toBe('65');
+    expect(await run('from_char_code(65)')).toBe('A');
+  });
+});
+
+describe('stdlib: math extras', () => {
+  it('pow', async () => expect(await run('pow(2, 10)')).toBe('1024'));
+  it('log', async () => expect(await run('floor(log(1000, 10))')).toBe('2'));
+  it('clamp', async () => expect(await run('clamp(15, 0, 10)')).toBe('10'));
+  it('sign', async () => {
+    expect(await run('sign(5)')).toBe('1');
+    expect(await run('sign(-3)')).toBe('-1');
+    expect(await run('sign(0)')).toBe('0');
+  });
+  it('sin / cos', async () => {
+    const v = await val('round(sin(0))');
+    expect(v).toMatchObject({ kind: 'number', value: 0 });
+  });
+});
+
+// ===== Phase 4: Module system =====
+
+describe('module system (pub)', () => {
+  it('pub exports a binding', async () => {
+    const { Interpreter } = await import('../src/interpreter.js');
+    const { parse } = await import('@nxl/core');
+
+    const src = `
+pub answer = 42
+pub double(n): n * 2
+`;
+    const prog = parse(src);
+    const interp = new Interpreter();
+    await interp.run(prog, src);
+    expect(interp.pubExports.has('answer')).toBe(true);
+    expect(interp.pubExports.has('double')).toBe(true);
+    const ans = interp.pubExports.get('answer');
+    expect(ans).toMatchObject({ kind: 'number', value: 42 });
+  });
+});
+
 // ===== JSON builtins =====
 
 describe('json', () => {

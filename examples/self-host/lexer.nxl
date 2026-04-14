@@ -1,0 +1,204 @@
+// NXL self-hosted lexer — Phase 8 milestone
+// Tokenizes a subset of NXL source into a list of [kind, value, line, col] tuples.
+// Written in NXL itself — the beginning of self-hosting.
+//
+// Note: NXL list member access uses .0, .1, .2 syntax (not [n]).
+
+// ===== Character predicates =====
+
+is_digit(ch): ch >= "0" && ch <= "9"
+is_alpha(ch): (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z") || ch == "_"
+is_alnum(ch): is_digit(ch) || is_alpha(ch)
+is_space(ch): ch == " " || ch == "\t" || ch == "\r"
+
+// ===== Read an identifier starting at pos =====
+// Returns [kind, word, end_pos]
+
+read_ident(src, pos): {
+  end = pos
+  src_len = len(src)
+  while end < src_len && is_alnum(slice(src, end, end + 1)) {
+    end = end + 1
+  }
+  word = slice(src, pos, end)
+  kind = match word
+    | "if"       → "If"
+    | "else"     → "Else"
+    | "for"      → "For"
+    | "while"    → "While"
+    | "return"   → "Return"
+    | "match"    → "Match"
+    | "break"    → "Break"
+    | "continue" → "Continue"
+    | "null"     → "Null"
+    | "true"     → "True"
+    | "false"    → "False"
+    | "use"      → "Use"
+    | "pub"      → "Pub"
+    | "select"   → "Select"
+    | _          → "Identifier"
+  return [kind, word, end]
+}
+
+// ===== Read a decimal number starting at pos =====
+// Returns [value_str, end_pos]
+
+read_number(src, pos): {
+  end = pos
+  src_len = len(src)
+  while end < src_len && is_digit(slice(src, end, end + 1)) {
+    end = end + 1
+  }
+  if end < src_len && slice(src, end, end + 1) == "." {
+    end = end + 1
+    while end < src_len && is_digit(slice(src, end, end + 1)) {
+      end = end + 1
+    }
+  }
+  return [slice(src, pos, end), end]
+}
+
+// ===== Read a double-quoted string starting at pos =====
+// pos points at the opening ". Returns [value_str, end_pos]
+
+read_string(src, pos): {
+  end = pos + 1
+  src_len = len(src)
+  while end < src_len && slice(src, end, end + 1) != "\"" {
+    if slice(src, end, end + 1) == "\\" { end = end + 1 }
+    end = end + 1
+  }
+  return [slice(src, pos + 1, end), end + 1]
+}
+
+// ===== Main tokenize function =====
+// Returns a list of [kind, value, line, col] tuples.
+
+tokenize(src): {
+  tokens = []
+  pos = 0
+  line = 1
+  col = 1
+  src_len = len(src)
+
+  while pos < src_len {
+    ch = slice(src, pos, pos + 1)
+    next_ch = pos + 1 < src_len ? slice(src, pos + 1, pos + 2) : ""
+
+    // Whitespace (spaces and tabs)
+    if is_space(ch) {
+      pos = pos + 1
+      col = col + 1
+      continue
+    }
+
+    // Newline
+    if ch == "\n" {
+      push(tokens, ["Newline", "\n", line, col])
+      pos = pos + 1
+      line = line + 1
+      col = 1
+      continue
+    }
+
+    // Line comment
+    if ch == "/" && next_ch == "/" {
+      while pos < src_len && slice(src, pos, pos + 1) != "\n" {
+        pos = pos + 1
+      }
+      continue
+    }
+
+    // Identifier or keyword
+    if is_alpha(ch) {
+      r = read_ident(src, pos)
+      push(tokens, [r.0, r.1, line, col])
+      col = col + (r.2 - pos)
+      pos = r.2
+      continue
+    }
+
+    // Number
+    if is_digit(ch) {
+      r = read_number(src, pos)
+      push(tokens, ["Number", r.0, line, col])
+      col = col + (r.1 - pos)
+      pos = r.1
+      continue
+    }
+
+    // String
+    if ch == "\"" {
+      r = read_string(src, pos)
+      push(tokens, ["String", r.0, line, col])
+      col = col + (r.1 - pos)
+      pos = r.1
+      continue
+    }
+
+    // Two-character operators
+    two = ch + next_ch
+    tok2 = match two
+      | "==" → "Eq"
+      | "!=" → "Neq"
+      | ">=" → "Gte"
+      | "<=" → "Lte"
+      | "**" → "Power"
+      | "||" → "Or"
+      | "&&" → "Intersect"
+      | "->" → "Arrow"
+      | "=>" → "Implies"
+      | "|>" → "Compose"
+      | _    → ""
+
+    if tok2 != "" {
+      push(tokens, [tok2, two, line, col])
+      pos = pos + 2
+      col = col + 2
+      continue
+    }
+
+    // Single-character tokens
+    tok1 = match ch
+      | "+" → "Plus"
+      | "-" → "Minus"
+      | "*" → "Star"
+      | "/" → "Slash"
+      | "%" → "Percent"
+      | "=" → "Assign"
+      | "!" → "Bang"
+      | "<" → "Lt"
+      | ">" → "Gt"
+      | "(" → "LParen"
+      | ")" → "RParen"
+      | "{" → "LBrace"
+      | "}" → "RBrace"
+      | "[" → "LBracket"
+      | "]" → "RBracket"
+      | ":" → "Colon"
+      | "," → "Comma"
+      | "." → "Dot"
+      | "|" → "Pipe"
+      | "?" → "Query"
+      | "@" → "At"
+      | _   → "Unknown"
+
+    push(tokens, [tok1, ch, line, col])
+    pos = pos + 1
+    col = col + 1
+  }
+
+  push(tokens, ["EOF", "", line, col])
+  return tokens
+}
+
+// ===== Demo: tokenize a snippet of NXL source =====
+
+sample = "x = 42\nif x > 0 {\n  print(x)\n}"
+toks = tokenize(sample)
+
+print("Tokens for: " + repr(sample))
+print("---")
+for tok ∈ toks {
+  print(tok.0 + "\t" + repr(tok.1))
+}
