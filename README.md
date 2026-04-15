@@ -108,7 +108,7 @@ for i ∈ [0, -1, 5] {
 mem!["NXL is built for agents"]
 results = mem?["agents language"]
 weather = tool!["get_weather", city="SF"]
-answer = llm@[prompt="What is NXL?", model="claude-haiku-4-5-20251001"]
+answer = llm@[prompt="What is NXL?", model="gpt-4o-mini"]
 ```
 
 ---

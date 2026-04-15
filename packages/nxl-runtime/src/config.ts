@@ -9,7 +9,7 @@ export interface RuntimeConfig {
 export function resolveConfig(partial: Partial<RuntimeConfig> = {}): RuntimeConfig {
   return {
     anthropicKey: partial.anthropicKey ?? process.env['ANTHROPIC_API_KEY'],
-    defaultModel: partial.defaultModel ?? process.env['NXL_DEFAULT_MODEL'] ?? 'claude-haiku-4-5-20251001',
+    defaultModel: partial.defaultModel ?? process.env['NXL_DEFAULT_MODEL'] ?? 'gpt-4o-mini',
     enableMemory: partial.enableMemory ?? true,
     enableTools: partial.enableTools ?? true,
     enableLLM: partial.enableLLM ?? true,

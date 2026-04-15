@@ -48,7 +48,7 @@ export function createStubRegistry(): ShorthandRegistry {
   reg.register('llm', '@', (args, positional) => {
     const prompt = args['prompt'] ?? positional[0];
     const model = args['model'];
-    const modelStr = model?.kind === 'string' ? model.value : 'claude-haiku-4-5-20251001';
+    const modelStr = model?.kind === 'string' ? model.value : 'gpt-4o-mini';
     console.log(`[llm@] model=${modelStr}, prompt=${prompt?.kind === 'string' ? prompt.value.slice(0, 80) : '...'}`);
     return mkString('(stub llm response)');
   });

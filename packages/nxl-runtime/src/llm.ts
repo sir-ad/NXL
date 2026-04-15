@@ -14,7 +14,7 @@ export class LLM {
   private defaultModel: string;
 
   constructor(config: LLMConfig = {}) {
-    this.defaultModel = config.defaultModel ?? 'claude-haiku-4-5-20251001';
+    this.defaultModel = config.defaultModel ?? 'gpt-4o-mini';
     const key = config.apiKey ?? process.env['ANTHROPIC_API_KEY'];
     if (key) {
       this.client = new Anthropic({ apiKey: key });
