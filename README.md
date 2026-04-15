@@ -13,7 +13,7 @@
 
 ---
 
-## The Problem
+## The Problem 
 
 Every LLM call costs tokens. Every token costs money, latency, and context window space.
 
